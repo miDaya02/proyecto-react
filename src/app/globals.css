@@ -124,7 +124,7 @@
 
 .avatarc {
   width: 50%;
-  height: 50%;
+  height: 40%;
   border-radius: 50%;
   margin-bottom: 1rem;
 
@@ -159,10 +159,10 @@
   cursor: pointer;
 }
 
-/* Ajustes para alinear los dos botones */
+
 .actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 2.5rem;
   align-items: center;
   justify-content: center;
   margin-top: 0.5rem;
@@ -173,14 +173,23 @@
   background-color: white; 
   color: #ef4444;
   border: 1px solid #ef4444;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  padding: 0.4rem 0.4rem;
   display: flex;
+  border-radius: 0.375rem;
   align-content: center;
   cursor: pointer;
   font-size: 0.875rem; 
 }
 
+.trash {
+  background-color: white; 
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  border-radius: 0.375rem;
+  display: flex;
+  align-content: center;
+  cursor: pointer;
+}
 /*
 .remove:hover {
   background-color: #ef4444; 
@@ -197,9 +206,12 @@
 .iconx {
   width: 15px;
   height: 15px;
-  margin-right: .5rem;
   filter: invert(28%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(95%) contrast(90%);
 }
 
-
+.iconTrash {
+  width: 28px;
+  height: 28px;
+  filter: invert(28%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(95%) contrast(90%);
+}
 
