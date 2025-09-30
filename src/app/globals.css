@@ -51,10 +51,11 @@
   font-weight: bold;
 }
 
-.nav a.active {
-  color: #cddc39;
-  font-weight: bold;
-  border-bottom: 2px solid #cddc39;
+
+
+
+.nav li a.active {
+  color: #cddc39; 
 }
 
 .nav li:last-child a {
