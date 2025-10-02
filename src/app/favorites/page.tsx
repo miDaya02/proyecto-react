@@ -1,6 +1,6 @@
 "use client";
 
-import { getContacts } from "@/services/contactService";
+import { getFavoriteContactsByUserId } from "@/services/contactService";
 import { useEffect, useState } from "react";
 
 type Contacts = {
@@ -11,7 +11,7 @@ type Contacts = {
     is_favorite: boolean;
 }[];
 
-export default function Contacts() {
+export default function Favorites() {
   const [contacts, setContacts] = useState<Contacts>([]);
   const [loading, setLoading] = useState(true);
   const [id, setId] = useState<string | null>(null);
@@ -24,24 +24,25 @@ export default function Contacts() {
     }
   }, []);
 
+  // Upload favorite contacts when we have the ID
   useEffect(() => {
-    const fetchContacts = async () => {
+    const fetchFavorites = async () => {
       if (!id) {
         setLoading(false);
         return;
       }
 
       try {
-        const data = await getContacts(id);
+        const data = await getFavoriteContactsByUserId(id); // ← Cambio aquí
         setContacts(data);
       } catch (error) {
-        console.error("Error fetching contacts:", error);
+        console.error("Error fetching favorite contacts:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchContacts();
+    fetchFavorites();
   }, [id]);
 
   if (loading) {
@@ -50,15 +51,14 @@ export default function Contacts() {
 
   return (
     <section className="card">
-      <h2>Contact List</h2>
+      <h2>Favorites</h2> 
       <div className="cards-container">
         {contacts.length === 0 ? (
-          <p>No contacts available</p>
+          <p>There are no favorite contacts</p> 
         ) : (
           contacts.map((contact) => (
             <div key={contact.id_contact} className="contact-card">
               <img
-              
                 src={contact.photo_profile || "/avatar.png"}
                 alt={contact.name}
                 className={contact.is_favorite ? "avatar" : "avatarc"}
@@ -70,7 +70,6 @@ export default function Contacts() {
 
               <div className="actions">
                 {contact.is_favorite ? (
-                  
                   <button className="remove">
                     <img src="/x.svg" className="iconx" alt="remove" />
                   </button>

@@ -1,13 +1,14 @@
 import API_URL, {handleResponse} from "./api";
 
 export const userLogin = async (email: string, password: string) => {
-  const response = await fetch(`${API_URL}/login`, {
+  const response = await fetch(`${API_URL}/users/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
   });
+  console.log("Response status:", response);
     return handleResponse(response);
 };
 
