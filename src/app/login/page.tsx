@@ -3,11 +3,6 @@ import { useState } from "react";
 import { userLogin } from "@/services/authService";
 import { useRouter } from "next/navigation";
 
-/*
-interface LoginProps { 
-    onLogin: () => void;
- }*/
-
 export default function Login() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -22,9 +17,10 @@ export default function Login() {
         try {
             const response = await userLogin(email, password);
             console.log("Login successful");
-            if (response.id) {
-                localStorage.setItem("id", response.id);
-            }
+            
+            // save id and token in localStorage
+            localStorage.setItem("id", response.id);
+            localStorage.setItem("token", response.token); 
             
             router.push("/contacts");
         } catch (err: any) {
@@ -37,13 +33,30 @@ export default function Login() {
     return (
         <section className="login-card">
             <h2>Login</h2>
+            {error && <p style={{color: 'red'}}>{error}</p>}
             <form className="login-form" onSubmit={handleSubmit}>
-                <input type="email" placeholder="email" id="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="password" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <input 
+                    type="email" 
+                    placeholder="email" 
+                    id="email" 
+                    name="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="password" 
+                    placeholder="password" 
+                    id="password" 
+                    name="password" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                />
                 <button type="submit" className="login-button" disabled={loading}>
-                    {loading ? 'Loading...' : 'Login'} </button>
+                    {loading ? 'Loading...' : 'Login'} 
+                </button>
             </form>
         </section>
     );
-
 };

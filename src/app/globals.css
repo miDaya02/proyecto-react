@@ -274,6 +274,7 @@
 .iconx {
   width: 15px;
   height: 15px;
+ 
   filter: invert(28%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(95%) contrast(90%);
 }
 

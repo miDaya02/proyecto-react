@@ -1,5 +1,15 @@
 import API_URL, {handleResponse} from "./api";
 
+
+const getHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
+
+// Login 
 export const userLogin = async (email: string, password: string) => {
   const response = await fetch(`${API_URL}/users/login`, {
     method: 'POST',
@@ -9,26 +19,26 @@ export const userLogin = async (email: string, password: string) => {
     body: JSON.stringify({ email, password }),
   });
   console.log("Response status:", response);
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
-export const userRegister = async (name: string, email: string, password: string) => {
-  const response = await fetch(`${API_URL}/register`, {
+// Registrer 
+export const userRegistrer = async (name: string, email: string, password: string) => {
+  const response = await fetch(`${API_URL}/registrer`, {
     method: 'POST', 
     headers: {
-        'Content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ name, email, password }),
   });
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
+// getUserById - SÍ necesita token
 export const getUserById = async (id_user: string) => {
-    const response = await fetch(`${API_URL}/users/${id_user}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-    return handleResponse(response);
-}
+  const response = await fetch(`${API_URL}/users/${id_user}`, {
+    method: 'GET',
+    headers: getHeaders(), // send to token
+  });
+  return handleResponse(response);
+};

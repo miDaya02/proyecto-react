@@ -25,7 +25,7 @@ export default function Contacts() {
   }, []);
 
   useEffect(() => {
-    const fetchContacts = async () => {
+    const fetchContacts = async () => { 
       if (!id) {
         setLoading(false);
         return;
