@@ -3,20 +3,20 @@
 import { getFavoriteContactsByUserId } from "@/services/contactService";
 import { useEffect, useState } from "react";
 
-type Contacts = {
-    id_contact: string;
-    name: string;
-    email: string;
-    photo_profile: string;
-    is_favorite: boolean;
-}[];
+type Contact = {
+  id_contact: string;
+  name: string;
+  last_name: string;  // ← AÑADE ESTO
+  email: string;
+  photo_profile: string;
+  is_favorite: boolean;
+};
 
 export default function Favorites() {
-  const [contacts, setContacts] = useState<Contacts>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [id, setId] = useState<string | null>(null);
 
-  // Get ID only on client side
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userId = localStorage.getItem("id");
@@ -24,7 +24,6 @@ export default function Favorites() {
     }
   }, []);
 
-  // Upload favorite contacts when we have the ID
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!id) {
@@ -33,7 +32,7 @@ export default function Favorites() {
       }
 
       try {
-        const data = await getFavoriteContactsByUserId(id); // ← Cambio aquí
+        const data = await getFavoriteContactsByUserId(id);
         setContacts(data);
       } catch (error) {
         console.error("Error fetching favorite contacts:", error);
@@ -64,7 +63,7 @@ export default function Favorites() {
                 className={contact.is_favorite ? "avatar" : "avatarc"}
               />
               <div className="info">
-                <h3>{contact.name}</h3>
+                <h3>{contact.name} {contact.last_name}</h3>
                 <p>{contact.email}</p>
               </div>
 
@@ -75,7 +74,7 @@ export default function Favorites() {
                   </button>
                 ) : (
                  <button className="favorite">
-                    <img src="/favorite.svg" className="iconFavorite" />
+                    <img src="/favorite.svg" className="iconFavorite" alt="favorite" />
                   </button>
                 )}
                 <button className="trash">
