@@ -1,20 +1,21 @@
+// app/protectedRoutes.tsx
+
 "use client";
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function ProtectedRoutes({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const token = useAppSelector((state) => state.auth.token);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && pathname !== '/login') {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        router.push('/login');
-      }
+    if (pathname !== '/login' && !token) {
+      router.push('/login');
     }
-  }, [pathname, router]);
+  }, [pathname, token, router]);
 
   return <>{children}</>;
 }

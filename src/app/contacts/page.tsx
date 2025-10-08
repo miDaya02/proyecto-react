@@ -33,12 +33,10 @@ export default function Contacts() {
   }, []);
 
   useEffect(() => {
+    if (!id) return;
+    
     const fetchContacts = async () => { 
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
       try {
         const data = await getContacts(id);
         setContacts(data);
@@ -101,10 +99,6 @@ export default function Contacts() {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <>
       {id && (
@@ -120,7 +114,9 @@ export default function Contacts() {
       <section className="card">
         <h2>Contact List</h2>
         <div className="cards-container">
-          {contacts.length === 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : contacts.length === 0 ? (
             <p>No contacts available</p>
           ) : (
             contacts.map((contact) => (

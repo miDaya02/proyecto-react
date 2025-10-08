@@ -1,10 +1,16 @@
+// app/login/page.tsx
+
 "use client";
+
 import { useState } from "react";
 import { userLogin } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/redux/hooks";
+import { setCredentials } from "@/redux/store";
 
 export default function Login() {
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -18,9 +24,9 @@ export default function Login() {
             const response = await userLogin(email, password);
             console.log("Login successful");
             
-            // save id and token in localStorage
             localStorage.setItem("id", response.id);
-            localStorage.setItem("token", response.token); 
+            localStorage.setItem("token", response.token);
+            dispatch(setCredentials({ id: response.id, token: response.token }));
             
             router.push("/contacts");
         } catch (err: any) {
@@ -59,4 +65,4 @@ export default function Login() {
             </form>
         </section>
     );
-};
+}

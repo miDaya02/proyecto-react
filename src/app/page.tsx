@@ -1,15 +1,18 @@
+// app/page.tsx (Overview)
+
 "use client";
 
 import {
-  getFavoriteContactsByUserId,
   removeFromFavorites,
   addToFavorites,
   getFiveContactsFavorite,
-  getFiveContactsNonFavorite,
+  getNonFavoriteContactsByUserId,
 } from "@/services/contactService";
 import { useEffect, useState } from "react";
 import NewContactModal from "./contacts/newContact";
 import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logout } from "@/redux/store";
 
 type Contact = {
   id_contact: string;
@@ -24,18 +27,11 @@ export default function Overview() {
   const [favorites, setFavorites] = useState<Contact[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [id, setId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const id = useAppSelector((state) => state.auth.id);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userId = localStorage.getItem("id");
-      setId(userId);
-    }
-  }, []);
-
-  // Escuchar evento del navbar
   useEffect(() => {
     const handleOpenModal = () => setIsModalOpen(true);
     window.addEventListener('openNewContactModal', handleOpenModal);
@@ -43,16 +39,14 @@ export default function Overview() {
   }, []);
 
   useEffect(() => {
+    if (!id) return;
+    
     const fetchData = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
       try {
         const [favoritesData, contactsData] = await Promise.all([
           getFiveContactsFavorite(id),
-          getFiveContactsNonFavorite(id)
+          getNonFavoriteContactsByUserId(id)
         ]);
         setFavorites(favoritesData);
         setContacts(contactsData);
@@ -80,28 +74,28 @@ export default function Overview() {
   };
 
   const handleAddFavorite = async (contactId: string) => {
-    if (!id) return;
-    try {
-      await addToFavorites(id, contactId);
-      const updatedContacts = contacts.map(c =>
-        c.id_contact === contactId ? { ...c, is_favorite: true } : c
-      );
-      setContacts(updatedContacts);
-      const newFavorite = updatedContacts.find(c => c.id_contact === contactId);
-      if (newFavorite && !favorites.some(f => f.id_contact === contactId)) {
-        setFavorites([...favorites, newFavorite]);
-      }
-    } catch (error) {
-      console.error("Error adding favorite:", error);
+  if (!id) return;
+  try {
+    await addToFavorites(id, contactId);
+    const updatedContacts = contacts.map(c =>
+      c.id_contact === contactId ? { ...c, is_favorite: true } : c
+    );
+    setContacts(updatedContacts);
+    const newFavorite = updatedContacts.find(c => c.id_contact === contactId);
+    if (newFavorite && !favorites.some(f => f.id_contact === contactId)) {
+      setFavorites([...favorites, newFavorite].slice(0, 5));
     }
-  };
+  } catch (error) {
+    console.error("Error adding favorite:", error);
+  }
+};
 
   const handleContactCreated = async () => {
     if (!id) return;
     try {
       const [favoritesData, contactsData] = await Promise.all([
-        getFavoriteContactsByUserId(id),
-        getFiveContactsNonFavorite(id)
+        getFiveContactsFavorite(id),
+        getNonFavoriteContactsByUserId(id)
       ]);
       setFavorites(favoritesData);
       setContacts(contactsData);
@@ -113,6 +107,7 @@ export default function Overview() {
   const handleLogout = () => {
     localStorage.removeItem("id");
     localStorage.removeItem("token");
+    dispatch(logout());
     router.push("/login");
   };
 
@@ -146,7 +141,7 @@ export default function Overview() {
                 </div>
                 <div className="actions">
                   <button className="remove" onClick={() => handleRemoveFavorite(contact.id_contact)}>
-                    <img src="/x.svg" className="iconx" alt="remove" /> Remove
+                    <img src="/x.svg" className="iconx" alt="remove" /> Remove
                   </button>
                 </div>
               </div>
@@ -177,11 +172,10 @@ export default function Overview() {
             ))
           )}
         </div>
-
       </section>
+
       <footer className="footer">
-        <button className="log-out" onClick={() => handleLogout()}>Log Out
-        </button>
+        <button className="log-out" onClick={() => handleLogout()}>Log Out</button>
       </footer>
     </>
   );

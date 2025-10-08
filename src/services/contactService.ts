@@ -88,8 +88,8 @@ export const getFiveContactsFavorite = async (idUser: string) => {
   return handleResponse(response);
 };
 
-export const getFiveContactsNonFavorite = async (idUser: string) => {
-  const response = await fetch(`${API_URL}/${idUser}/contacts/five-non-favorites`, {
+export const getNonFavoriteContactsByUserId = async (idUser: string) => {
+  const response = await fetch(`${API_URL}/${idUser}/contacts/non-favorites`, {
     method: 'GET',
     headers: getHeaders(), 
   });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { updateContact } from "@/services/contactService";
 
 type Contact = {
@@ -35,6 +36,14 @@ export default function EditContactModal({
     isfavorite: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const pathname = usePathname();
+
+  // Cerrar modal automáticamente al cambiar de ruta
+  useEffect(() => {
+    if (isOpen) {
+      onClose();
+    }
+  }, [pathname]);
 
   // Cargar datos del contacto cuando cambie
   useEffect(() => {
@@ -96,11 +105,22 @@ export default function EditContactModal({
               className="form-input"
               type="text"
               name="name"
-
               placeholder="Name"
               value={formData.name}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <input
+              type="text"
+              name="last_name"
+              placeholder="Last Name"
+              value={formData.last_name}
+              onChange={handleChange}
+              required
+              className="form-input"
             />
           </div>
 
@@ -115,17 +135,7 @@ export default function EditContactModal({
               required
             />
           </div>
-          <div className="form-group">
-            <input
-              type="text"
-              name="last_name"
-              placeholder="Last Name"
-              value={formData.last_name}
-              onChange={handleChange}
-              required
-              className="form-input"
-            />
-          </div>
+
           <div className="form-group">
             <input
               className="form-input"

@@ -1,14 +1,18 @@
+// app/navbar.tsx
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import NewContactModal from "./contacts/newContact";
+import { useAppSelector } from "@/redux/hooks";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const id = useAppSelector((state) => state.auth.id);
 
   if (pathname === "/login") return null;
 
@@ -37,11 +41,11 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {showModal && (
+      {showModal && id && (
         <NewContactModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          userId={localStorage.getItem("id") || ""}
+          userId={id}
           onContactCreated={() => window.location.reload()}
         />
       )}

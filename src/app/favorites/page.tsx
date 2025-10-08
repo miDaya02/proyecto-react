@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 type Contact = {
   id_contact: string;
   name: string;
-  last_name: string;  // ← AÑADE ESTO
+  last_name: string;
   email: string;
   photo_profile: string;
   is_favorite: boolean;
@@ -44,16 +44,14 @@ export default function Favorites() {
     fetchFavorites();
   }, [id]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <section className="card">
       <h2>Favorites</h2> 
       <div className="cards-container">
-        {contacts.length === 0 ? (
-          <p>There are no favorite contacts</p> 
+        {loading ? (
+          <p>Loading...</p>
+        ) : contacts.length === 0 ? (
+          <p>There are no favorite contacts</p>
         ) : (
           contacts.map((contact) => (
             <div key={contact.id_contact} className="contact-card">

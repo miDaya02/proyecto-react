@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { createContact } from "@/services/contactService";
 
 type NewContactModalProps = {
@@ -25,6 +26,16 @@ export default function NewContactModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pathname = usePathname();
+  const previousPathname = useRef(pathname);
+
+  // Cerrar modal solo cuando la ruta cambie (no en el primer render)
+  useEffect(() => {
+    if (previousPathname.current !== pathname && isOpen) {
+      onClose();
+    }
+    previousPathname.current = pathname;
+  }, [pathname, isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +43,7 @@ export default function NewContactModal({
     setError(null);
 
     try {
-      console.log("Sending data:", formData); // Debug log
+      console.log("Sending data:", formData);
       await createContact(userId, formData);
       
       setFormData({
