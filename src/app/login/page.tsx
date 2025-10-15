@@ -1,12 +1,12 @@
-// app/login/page.tsx
-
 "use client";
 
 import { useState } from "react";
 import { userLogin } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAppDispatch } from "@/redux/hooks";
 import { setCredentials } from "@/redux/store";
+import Image from "next/image";
 
 export default function Login() {
     const router = useRouter();
@@ -37,32 +37,51 @@ export default function Login() {
     }
 
     return (
-        <section className="login-card">
-            <h2>Login</h2>
-            {error && <p style={{color: 'red'}}>{error}</p>}
-            <form className="login-form" onSubmit={handleSubmit}>
-                <input 
-                    type="email" 
-                    placeholder="email" 
-                    id="email" 
-                    name="email" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    required 
+        <>
+            <div className="background"></div>
+            <section className="login-card">
+                <Image 
+                    src="/logo.png" 
+                    alt="Globant" 
+                    width={150} 
+                    height={50}
+                    className="logo-login"
+                    priority
                 />
-                <input 
-                    type="password" 
-                    placeholder="password" 
-                    id="password" 
-                    name="password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    required 
-                />
-                <button type="submit" className="login-button" disabled={loading}>
-                    {loading ? 'Loading...' : 'Login'} 
-                </button>
-            </form>
-        </section>
+                
+                {error && <p style={{color: 'red'}}>{error}</p>}
+                
+                <form className="login-form" onSubmit={handleSubmit}>
+                    
+                    <input 
+                        type="email" 
+                        placeholder="Email" 
+                        id="email" 
+                        name="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                        disabled={loading}
+                    />
+                    <input 
+                        type="password" 
+                        placeholder="Password" 
+                        id="password" 
+                        name="password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        required 
+                        disabled={loading}
+                    />
+                    <button type="submit" className="login-button" disabled={loading}>
+                        {loading ? 'Loading...' : 'Login'} 
+                    </button>
+                    
+                    <Link href="/register" className="register">
+                        Don't have an account? Register
+                    </Link>
+                </form>
+            </section>
+        </>
     );
 }

@@ -9,7 +9,7 @@ type Contact = {
   name: string;
   last_name: string;
   email: string;
-  photo_profile: string;
+  photo_profile: string | null;  // Ahora acepta null explícitamente
   is_favorite: boolean;
 };
 
@@ -45,15 +45,15 @@ export default function EditContactModal({
     }
   }, [pathname]);
 
-  // Cargar datos del contacto cuando cambie
+  // Cargar datos del contacto cuando cambie - CORREGIDO
   useEffect(() => {
     if (contact) {
       setFormData({
-        name: contact.name,
-        last_name: contact.last_name,
-        photo_profile: contact.photo_profile,
-        email: contact.email,
-        isfavorite: contact.is_favorite,
+        name: contact.name || "",
+        last_name: contact.last_name || "",
+        photo_profile: contact.photo_profile || "",  // Convierte null a string vacío
+        email: contact.email || "",
+        isfavorite: contact.is_favorite || false,
       });
     }
   }, [contact]);

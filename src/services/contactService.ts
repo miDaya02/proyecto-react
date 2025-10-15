@@ -9,16 +9,16 @@ const getHeaders = () => {
   };
 };
 
-export const getContacts = async (idUser: string) => {
-  const response = await fetch(`${API_URL}/${idUser}/contacts`, {
+export const getContacts = async (idUser: string, page: number = 1, limit: number = 16) => {
+  const response = await fetch(`${API_URL}/${idUser}/contacts?page=${page}&limit=${limit}`, {
     method: 'GET',
     headers: getHeaders(), 
   });
   return handleResponse(response);
 };
 
-export const getFavoriteContactsByUserId = async (idUser: string) => {
-  const response = await fetch(`${API_URL}/${idUser}/contacts/favorites`, {
+export const getFavoriteContactsByUserId = async (idUser: string, page: number = 1, limit: number = 16) => {
+  const response = await fetch(`${API_URL}/${idUser}/contacts/favorites?page=${page}&limit=${limit}`, {
     method: 'GET',
     headers: getHeaders(), 
   });
@@ -62,10 +62,10 @@ export const updateContact = async (idUser: string, contactId: string, contactDa
     method: 'PUT',
     headers: getHeaders(),
     body: JSON.stringify({
-      ...(contactData.name && { name: contactData.name }),
-      ...(contactData.last_name && { last_name: contactData.last_name }),
-      ...(contactData.email && { email: contactData.email }),
-      ...(contactData.photo_profile && { photo_profile: contactData.photo_profile }),
+      ...(contactData.name !== undefined && { name: contactData.name }),
+      ...(contactData.last_name !== undefined && { last_name: contactData.last_name }),
+      ...(contactData.email !== undefined && { email: contactData.email }),
+      ...(contactData.photo_profile !== undefined && { photo_profile: contactData.photo_profile }), // Cambiado
       ...(contactData.isfavorite !== undefined && { is_favorite: contactData.isfavorite }),
     }),
   });
@@ -80,16 +80,16 @@ export const deleteContact = async (idUser: string, contactId: string) => {
   return handleResponse(response);
 };
 
-export const getFiveContactsFavorite = async (idUser: string) => {
-  const response = await fetch(`${API_URL}/${idUser}/contacts/five-favorites`, {
+export const getFourContactsFavorite = async (idUser: string) => {
+  const response = await fetch(`${API_URL}/${idUser}/contacts/four-favorites`, {
     method: 'GET',
     headers: getHeaders(), 
   });
   return handleResponse(response);
 };
 
-export const getNonFavoriteContactsByUserId = async (idUser: string) => {
-  const response = await fetch(`${API_URL}/${idUser}/contacts/non-favorites`, {
+export const getNonFavoriteContactsByUserId = async (idUser: string, page: number = 1, limit: number = 16) => {
+  const response = await fetch(`${API_URL}/${idUser}/contacts/non-favorites?page=${page}&limit=${limit}`, {
     method: 'GET',
     headers: getHeaders(), 
   });

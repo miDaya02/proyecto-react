@@ -1,5 +1,3 @@
-// app/navbar.tsx
-
 "use client";
 
 import Link from "next/link";
@@ -14,7 +12,8 @@ export default function Navbar() {
   const [showModal, setShowModal] = useState(false);
   const id = useAppSelector((state) => state.auth.id);
 
-  if (pathname === "/login") return null;
+  // No mostrar navbar en login y register
+  if (pathname === "/login" || pathname === "/register") return null;
 
   return (
     <>

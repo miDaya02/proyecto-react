@@ -1,4 +1,4 @@
-/* Layout general */
+/*GENERAL LAYOUT*/
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,14 +9,21 @@
 .layout {
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
+  background-color: #fff;
   color: #111827;
   min-height: 100vh;
 }
 
-/* Header */
+.main {
+  flex-grow: 1;
+  max-width: 100%;
+  padding: 2.5rem 1.5rem;
+  color: #000;
+}
+
+/* HEADER & NAVIGATION*/
 .header {
-  background-color: #ffffff;
+  background-color: #fff;
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   position: relative;
@@ -26,18 +33,18 @@
   height: 40px;
 }
 
+.nav-bar {
+  display: flex;
+  padding-inline: 1.87rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 3rem;
   list-style: none;
-}
-
-.nav-bar {
-  display: flex;
-  padding-inline: 1.3rem;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .nav a {
@@ -64,7 +71,6 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón hamburguesa - oculto por defecto */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -84,7 +90,6 @@
   border-radius: 3px;
 }
 
-/* Animación del menú hamburguesa */
 .line1.open {
   transform: rotate(45deg) translate(6px, 6px);
 }
@@ -97,67 +102,189 @@
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
-/* Styles for Login Page */
-.login-card {
-  display: grid;
-  text-align: center;
-  align-items: center;
-  gap: 0.8rem;
-  width: 450px;
-  height: 55%;
-  padding: 1.8rem;
-  margin: auto;
+/*LOGIN & REGISTER*/
+
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.background::after {
+  content: '';
   position: absolute;
-  background-color: #C1D72F;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 450px;
+  padding: 2.5rem 2rem;
+  margin: auto;
+  position: fixed;
+
+  /*GLASSMORPHISM EFFECT */
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.login-card .logo-login {
+  height: 50px;
+  width: auto;
+  margin-bottom: 0.5rem;
 }
 
 .login-form {
-  display: grid;
-  width: 100%;
+  display: flex;
   align-items: center;
-  gap: 0.8rem;
+  flex-direction: column;
+  width: 100%;
+  gap: 1.25rem;
+}
+
+.login-form p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #323232;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
 }
 
 .login-form input {
-  padding: 0.4rem;
+  padding: 0.475rem 1rem;
   border: none;
-  border-bottom: 1px solid #e0e4ea;
+  border-radius: 6px;
   width: 100%;
-  background-color: #d9e381;
-  font-size: 0.6rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
   outline: none;
+  transition: all 0.3s ease;
+  color: #323232;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.login-form input:focus {
-  border-bottom: 2px solid #a8b844;
+.login-form input::placeholder {
+  color: #323232a8;
 }
 
-.login-form button {
-  padding: 0.4rem 1.2rem;
-  font-size: 0.7rem;
+.login-form input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-form button,
+.login-button {
+  padding: 0.475rem 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-transform: uppercase;
-  border-radius: 0.375rem;
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+  border-radius: 6px;
+  background-color: #aec53a;
+  color: #323232;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: none;
   cursor: pointer;
-  width: 100%;
+  width: 40%;
   outline: none;
+  transition: all 0.3s ease;
 }
 
+.login-form button:hover:not(:disabled),
+.login-button:hover:not(:disabled) {
+  background-color: #C1D72F;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.login-form button:active:not(:disabled),
+.login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-form button:disabled,
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.register {
+  margin-top: 0.3rem;
+  display: inline-block;
+  font-size: 0.9rem;
+  color: #0c0c0c;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.register:hover {
+  color: #323232;
+}
+
+.login-card p[style*="color: red"],
+.error-message {
+  color: #dc2626 !important;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/*CONTACTS SECTION*/
 .card {
-  margin-top: 1.5rem;
-  margin-bottom: 5rem;
+  margin: 1.5rem 1.25rem 5rem;
 }
 
-.main {
+.card h2 {
+  font-size: 1.75rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.card h2::after {
+  content: "";
   flex-grow: 1;
-  max-width: 100%;
-  padding: 2.5rem 1.5rem;
-  color: #000000;
+  height: 2px;
+  background-color: #C1D72F;
 }
 
 .cards-container {
@@ -165,19 +292,18 @@
   text-align: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 2.7rem;
   margin-top: 1.5rem;
 }
 
-/* Botón de editar en esquina superior derecha de la tarjeta */
 .contact-card {
   display: flex;
   flex-direction: column;
-  max-width: 220px;
+  max-width: 420px;
   align-items: center;
-  border-radius: 0.5rem;
-  width: 220px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.2rem;
+  width: 260px;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   background: white;
   position: relative;
@@ -205,26 +331,11 @@
 .icon-edit {
   width: 20px;
   height: 20px;
-  filter: invert(17%) sepia(80%) saturate(395%) hue-rotate(28deg) brightness(132%) contrast(90%);
+  filter: invert(52%) sepia(8%) saturate(489%) hue-rotate(182deg) brightness(92%) contrast(87%);
 }
 
 .edit-icon-button:hover .icon-edit {
-  filter: invert(17%) sepia(80%) saturate(395%) hue-rotate(28deg) brightness(132%) contrast(90%);
-}
-
-.card h2 {
-  font-size: 1.75rem;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.card h2::after {
-  content: "";
-  flex-grow: 1;
-  height: 2px;
-  background-color: #C1D72F;
+  filter: invert(17%) sepia(5%) saturate(435%) hue-rotate(314deg) brightness(95%) contrast(90%);
 }
 
 .avatar {
@@ -244,24 +355,12 @@
   margin-bottom: 1rem;
 }
 
-.log-out {
-  padding: 0.75rem 2rem;
-  background-color: #C1D72F;
-  color: black;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
+.info {
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  padding: 0 0.5rem;
 }
-
-.footer {
-  display: flex;
-  justify-content: center;
-  margin: 2rem 0;
-}
-
-/* Reemplaza tu .info h3 actual con esto: */
 
 .info h3 {
   font-size: 1.09rem;
@@ -269,23 +368,27 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px;
-  /* Ajusta según necesites */
-}
-
-
-.info {
-  padding-inline: 1rem;
-  overflow: hidden;
-
 }
 
 .info p {
   color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.actions {
+  display: flex;
+  gap: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+}
 
 .favorite {
   border: 1.32px solid #C1D72F;
@@ -298,29 +401,7 @@
   cursor: pointer;
 }
 
-.actions {
-  display: flex;
-  gap: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.5rem;
-  padding-top: 1rem;          
-  border-top: 1px solid #e5e7eb;  
-  width: 100%;                
-}
-
-.remove {
-  background-color: white;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  padding: 0.4rem;
-  display: flex;
-  align-items: center;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
+.remove,
 .trash {
   background-color: white;
   color: #ef4444;
@@ -331,6 +412,12 @@
   cursor: pointer;
 }
 
+.remove {
+  padding: 0.4rem;
+  font-size: 0.875rem;
+}
+
+/*ICONS*/
 .iconFavorite {
   width: 20px;
   height: 20px;
@@ -355,7 +442,7 @@
   filter: invert(28%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(95%) contrast(90%);
 }
 
-/* Inline Form Styles - MODAL COMPACTO Y RESPONSIVE */
+/*MODAL FORMS (New/Edit Contact)*/
 .inline-form-container {
   max-height: 0;
   overflow: hidden;
@@ -425,7 +512,7 @@
   border-radius: 0;
   font-size: 0.9rem;
   background-color: #d9e381;
-  color: #000000;
+  color: #000;
   transition: all 0.2s;
   box-shadow: none;
   border-bottom: 2px solid transparent;
@@ -496,7 +583,61 @@
   cursor: not-allowed;
 }
 
-/* Responsive para tablets grandes */
+/*PAGINATOR*/
+.paginator-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  margin: 3rem 0 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.paginator-btn-arrow {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.paginator-btn-arrow:hover:not(:disabled) {
+  color: #323232;
+}
+
+.paginator-btn-arrow:disabled {
+  color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+.paginator-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  user-select: none;
+}
+
+/*FOOTER*/
+.footer {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.log-out {
+  padding: 0.75rem 2rem;
+  background-color: #C1D72F;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/*RESPONSIVE - TABLETS GRANDES (1024px)*/
 @media (max-width: 1024px) {
   .inline-form-content {
     width: 45%;
@@ -504,7 +645,7 @@
   }
 }
 
-/* Responsive para tablets */
+/*RESPONSIVE - TABLETS (768px)*/
 @media (max-width: 768px) {
   .nav {
     gap: 1rem;
@@ -520,11 +661,34 @@
   }
 
   .login-card {
-    max-width: 280px;
-    padding: 1.2rem;
+    max-width: 380px;
+    padding: 2.5rem 2rem;
+    min-height: 450px;
   }
 
-  /* Modal en tablets */
+  .login-card h2 {
+    font-size: 2.25rem;
+  }
+
+  .login-form p {
+    font-size: 1.35rem;
+  }
+
+  .login-form input {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .login-form button,
+  .login-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .register {
+    font-size: 0.85rem;
+  }
+
   .inline-form-container.open {
     max-height: 500px;
   }
@@ -549,9 +713,13 @@
     padding: 0.5rem 1.25rem;
     font-size: 0.75rem;
   }
+
+  .paginator-container {
+    justify-content: center;
+  }
 }
 
-/* Responsive para móviles */
+/*RESPONSIVE - MÓVILES (640px)*/
 @media (max-width: 640px) {
   .hamburger {
     display: flex;
@@ -564,10 +732,10 @@
     height: 100vh;
     width: 70%;
     max-width: 300px;
-    background-color: #ffffff;
+    background-color: #fff;
     flex-direction: column;
     align-items: flex-start;
-    padding: 5rem 2rem 2rem 2rem;
+    padding: 5rem 2rem 2rem;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease;
     z-index: 999;
@@ -595,14 +763,48 @@
     font-size: 0.8rem;
   }
 
-  /* Modal en móviles */
+  .login-card {
+    max-width: 90%;
+    min-width: 320px;
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+    min-height: 420px;
+  }
+
+  .login-card h2 {
+    font-size: 2rem;
+  }
+
+  .login-form {
+    gap: 1rem;
+  }
+
+  .login-form p {
+    font-size: 1.25rem;
+  }
+
+  .login-form input {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.875rem;
+  }
+
+  .login-form button,
+  .login-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .register {
+    font-size: 0.8rem;
+  }
+
   .inline-form-container.open {
     max-height: 480px;
   }
 
   .inline-form-content {
     width: 75%;
-    padding: 1.5rem 1.5rem;
+    padding: 1.5rem;
     max-height: 430px;
   }
 
@@ -635,29 +837,33 @@
   }
 }
 
-/* Responsive para móviles pequeños */
+/* RESPONSIVE - MÓVILES PEQUEÑOS (480px) */
 @media (max-width: 480px) {
   .login-card {
-    max-width: 90%;
-    padding: 1rem;
-    gap: 0.75rem;
+    padding: 1.75rem 1.25rem;
+    gap: 1.25rem;
+    min-height: 400px;
   }
 
-  .login-form {
-    gap: 0.75rem;
+  .login-card h2 {
+    font-size: 1.85rem;
+  }
+
+  .login-form p {
+    font-size: 1.15rem;
   }
 
   .login-form input {
-    padding: 0.6rem;
-    font-size: 1rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
   }
 
-  .login-form button {
-    padding: 0.6rem 1.2rem;
+  .login-form button,
+  .login-button {
+    padding: 0.7rem 1rem;
     font-size: 0.8rem;
   }
 
-  /* Modal en móviles pequeños */
   .inline-form-container.open {
     max-height: 460px;
   }

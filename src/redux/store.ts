@@ -1,5 +1,3 @@
-// redux/store.ts
-
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
@@ -23,6 +21,11 @@ const authSlice = createSlice({
     logout: (state) => {
       state.id = null;
       state.token = null;
+      // Limpiar localStorage también
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('id');
+        localStorage.removeItem('token');
+      }
     },
   },
 });
