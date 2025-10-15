@@ -69,6 +69,12 @@
   background-color: #C1D72F;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.new-button:hover {
+  background-color: #aec53a;
+  transform: translateY(-1px);
 }
 
 .hamburger {
@@ -103,8 +109,6 @@
 }
 
 /*LOGIN & REGISTER*/
-
-
 .background {
   position: fixed;
   top: 0;
@@ -139,8 +143,6 @@
   padding: 2.5rem 2rem;
   margin: auto;
   position: fixed;
-
-  /*GLASSMORPHISM EFFECT */
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -175,6 +177,10 @@
   text-align: center;
 }
 
+.login-form .form-group {
+  width: 100%;
+}
+
 .login-form input {
   padding: 0.475rem 1rem;
   border: none;
@@ -195,6 +201,10 @@
 .login-form input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.login-form input:focus {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .login-form button,
@@ -253,7 +263,6 @@
   color: #323232;
 }
 
-.login-card p[style*="color: red"],
 .error-message {
   color: #dc2626 !important;
   background-color: rgba(255, 255, 255, 0.9);
@@ -265,6 +274,14 @@
   width: 100%;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.field-error {
+  display: block;
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 /*CONTACTS SECTION*/
@@ -307,7 +324,10 @@
   padding: 1.5rem;
   background: white;
   position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+
 
 .edit-icon-button {
   position: absolute;
@@ -399,6 +419,33 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.favorite:hover {
+  background-color: #f9fafb;
+  transform: scale(1.05);
+}
+/* Ocultar texto "remove" solo en la página de Contacts */
+.contacts-page .remove {
+  font-size: 0;
+  line-height: 0;
+}
+
+.contacts-page .remove .iconx {
+  font-size: initial;
+  display: block;
+}
+
+/* Si el texto está en ::before o ::after */
+.contacts-page .remove::before,
+.contacts-page .remove::after {
+  content: none !important;
+  display: none !important;
+}
+
+.remove::after {
+  content: " Remove";
 }
 
 .remove,
@@ -410,6 +457,12 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove:hover,
+.trash:hover {
+  transform: scale(1.05);
 }
 
 .remove {
@@ -490,6 +543,11 @@
   font-size: 24px;
   cursor: pointer;
   line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.form-close:hover {
+  transform: scale(1.1);
 }
 
 .contact-form {
@@ -528,6 +586,10 @@
   background-color: #d9e381;
   box-shadow: none;
   border-bottom: 2px solid #a8b844;
+}
+
+.form-input[aria-invalid="true"] {
+  border-bottom-color: #ef4444;
 }
 
 .checkbox-group {
@@ -619,6 +681,173 @@
   user-select: none;
 }
 
+/*TOAST NOTIFICATIONS*/
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  min-width: 300px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.toast-error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.toast-info {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.toast-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1rem;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+/*CONFIRM DIALOG*/
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.confirm-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-message {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.confirm-cancel,
+.confirm-button {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.confirm-cancel {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.confirm-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.confirm-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #dc2626;
+}
+
 /*FOOTER*/
 .footer {
   display: flex;
@@ -635,6 +864,13 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.log-out:hover {
+  background-color: #aec53a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /*RESPONSIVE - TABLETS GRANDES (1024px)*/
@@ -716,6 +952,16 @@
 
   .paginator-container {
     justify-content: center;
+  }
+
+  .toast-container {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .toast {
+    min-width: auto;
   }
 }
 
@@ -834,6 +1080,23 @@
 
   .form-close {
     font-size: 20px;
+  }
+
+  .toast-container {
+    top: 10px;
+  }
+
+  .confirm-dialog {
+    padding: 1.5rem;
+  }
+
+  .confirm-actions {
+    flex-direction: column;
+  }
+
+  .confirm-cancel,
+  .confirm-button {
+    width: 100%;
   }
 }
 

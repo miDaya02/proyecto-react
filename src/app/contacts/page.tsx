@@ -1,116 +1,102 @@
+// app/contacts/page.tsx
 "use client";
 
-import {
-  getContacts,
-  removeFromFavorites,
-  addToFavorites,
-  deleteContact
-} from "@/services/contactService";
 import { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { useContacts } from "@/hooks/useContacts";
+import ContactCard from "@/components/ContactCard";
 import EditContactModal from "./editContact";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import Paginator from "../paginator/page";
-type Contact = {
-  id_contact: string;
-  last_name: string;
-  name: string;
-  email: string;
-  photo_profile: string;
-  is_favorite: boolean;
-};
-
-type PaginationInfo = {
-  currentPage: number;
-  totalPages: number;
-  totalContacts: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-};
+import { Contact } from "@/types";
 
 export default function Contacts() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 1,
-    totalContacts: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-  const [loading, setLoading] = useState(true);
-  const [id, setId] = useState<string | null>(null);
+  const id = useAppSelector((state) => state.auth.id);
+  const {
+    contacts,
+    pagination,
+    loading,
+    fetchContacts,
+    toggleFavorite,
+    removeContact,
+  } = useContacts(id);
+  
+  const [localContacts, setLocalContacts] = useState<Contact[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userId = window.localStorage.getItem("id");
-      setId(userId);
-    }
-  }, []);
-
-  const fetchContacts = async (page: number = 1) => {
-    if (!id) return;
-
-    setLoading(true);
-    try {
-      const data = await getContacts(id, page, 16);
-      setContacts(data.contacts);
-      setPagination(data.pagination);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    contactId: string | null;
+    contactName: string;
+  }>({
+    isOpen: false,
+    contactId: null,
+    contactName: "",
+  });
 
   useEffect(() => {
     fetchContacts();
-  }, [id]);
+  }, [fetchContacts]);
+
+  useEffect(() => {
+    setLocalContacts(contacts);
+  }, [contacts]);
 
   const handlePageChange = (newPage: number) => {
     fetchContacts(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleToggleFavorite = async (contactId: string, isFavorite: boolean) => {
-    if (!id) return;
+  const handleToggleFavorite = async (
+    contactId: string,
+    isFavorite: boolean
+  ) => {
+    // Actualización optimista: actualiza el estado local inmediatamente
+    setLocalContacts(prev => 
+      prev.map(c => 
+        c.id_contact === contactId 
+          ? { ...c, is_favorite: !isFavorite }
+          : c
+      )
+    );
 
-    try {
-      if (isFavorite) {
-        await removeFromFavorites(id, contactId);
-      } else {
-        await addToFavorites(id, contactId);
-      }
-
-      setContacts(contacts.map(c =>
-        c.id_contact === contactId ? { ...c, is_favorite: !isFavorite } : c
-      ));
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
+    const result = await toggleFavorite(contactId, isFavorite);
+    if (!result.success) {
+      // Si falla, restaura el estado original
+      setLocalContacts(contacts);
     }
   };
 
-  const handleDelete = async (contactId: string) => {
-    if (!id) return;
+  const handleDeleteClick = (contact: Contact) => {
+    setConfirmDialog({
+      isOpen: true,
+      contactId: contact.id_contact,
+      contactName: `${contact.name} ${contact.last_name}`,
+    });
+  };
 
-    if (!confirm("Are you sure you want to delete this contact?")) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!confirmDialog.contactId) return;
+    
+    // Actualización optimista
+    setLocalContacts(prev => prev.filter(c => c.id_contact !== confirmDialog.contactId));
+    setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
 
-    try {
-      await deleteContact(id, contactId);
+    const result = await removeContact(confirmDialog.contactId);
+    if (!result.success) {
+      // Si falla, recarga
       fetchContacts(pagination.currentPage);
-    } catch (error) {
-      console.error("Error deleting contact:", error);
     }
   };
 
   const handleEditContact = (contact: Contact) => {
     setSelectedContact(contact);
     setIsEditModalOpen(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleContactUpdated = async () => {
+  const handleContactUpdated = () => {
+    // Recarga solo cuando se edita (necesario para obtener cambios del servidor)
     fetchContacts(pagination.currentPage);
   };
 
@@ -125,63 +111,41 @@ export default function Contacts() {
           onContactUpdated={handleContactUpdated}
         />
       )}
-
-      <section className="card">
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() =>
+          setConfirmDialog({ isOpen: false, contactId: null, contactName: "" })
+        }
+        onConfirm={handleConfirmDelete}
+        title="Delete Contact"
+        message={`Are you sure you want to delete ${confirmDialog.contactName}?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+      <section className="card contacts-page">
         <h2>Contact List</h2>
         <div className="cards-container">
-          {loading ? (
+          {loading && localContacts.length === 0 ? (
             <p>Loading...</p>
-          ) : contacts.length === 0 ? (
+          ) : localContacts.length === 0 ? (
             <p>No contacts available</p>
           ) : (
-            contacts.map((contact) => (
-              <div key={contact.id_contact} className="contact-card">
-                <button
-                  className="edit-icon-button"
-                  onClick={() => handleEditContact(contact)}
-                >
-                  <img src="/edit.svg" alt="edit" className="icon-edit" />
-                </button>
-
-                <img
-                  src={contact.photo_profile || "/avatar.png"}
-                  alt={contact.name}
-                  className={contact.is_favorite ? "avatar" : "avatarc"}
-                />
-                <div className="info">
-                  <h3>{contact.name} {contact.last_name}</h3>
-                  <p>{contact.email}</p>
-                </div>
-
-                <div className="actions">
-                  {contact.is_favorite ? (
-                    <button
-                      className="remove"
-                      onClick={() => handleToggleFavorite(contact.id_contact, true)}
-                    >
-                      <img src="/x.svg" className="iconx" alt="remove" />
-                    </button>
-                  ) : (
-                    <button
-                      className="favorite"
-                      onClick={() => handleToggleFavorite(contact.id_contact, false)}
-                    >
-                      <img src="/favorite.svg" className="iconFavorite" alt="favorite" />
-                    </button>
-                  )}
-                  <button
-                    className="trash"
-                    onClick={() => handleDelete(contact.id_contact)}
-                  >
-                    <img src="/trash.svg" className="iconTrash" alt="trash" />
-                  </button>
-                </div>
-              </div>
+            localContacts.map((contact) => (
+              <ContactCard
+                key={contact.id_contact}
+                contact={contact}
+                onToggleFavorite={() =>
+                  handleToggleFavorite(contact.id_contact, contact.is_favorite)
+                }
+                onDelete={() => handleDeleteClick(contact)}
+                onEdit={() => handleEditContact(contact)}
+                showEdit={true}
+                showFavorite={true}
+                showDelete={true}
+              />
             ))
           )}
         </div>
-
-
         <Paginator
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}

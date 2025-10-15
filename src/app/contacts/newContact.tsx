@@ -1,8 +1,10 @@
+// app/contacts/newContact.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { createContact } from "@/services/contactService";
+import { useContacts } from "@/hooks/useContacts";
+import { useForm } from "@/hooks/useForm";
 
 type NewContactModalProps = {
   isOpen: boolean;
@@ -17,19 +19,20 @@ export default function NewContactModal({
   userId,
   onContactCreated,
 }: NewContactModalProps) {
-  const [formData, setFormData] = useState({
+  const { addContact } = useContacts(userId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const pathname = usePathname();
+  const previousPathname = useRef(pathname);
+
+  const { values, handleChange, reset } = useForm({
     name: "",
     last_name: "",
     photo_profile: "",
     email: "",
     isfavorite: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pathname = usePathname();
-  const previousPathname = useRef(pathname);
 
-  // Cerrar modal solo cuando la ruta cambie (no en el primer render)
+  // Cerrar modal solo cuando la ruta cambie
   useEffect(() => {
     if (previousPathname.current !== pathname && isOpen) {
       onClose();
@@ -40,61 +43,33 @@ export default function NewContactModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError(null);
 
-    try {
-      console.log("Sending data:", formData);
-      await createContact(userId, formData);
-      
-      setFormData({
-        name: "",
-        last_name: "",
-        photo_profile: "",
-        email: "",
-        isfavorite: false,
-      });
+    const result = await addContact(values);
+
+    if (result.success) {
+      reset();
       onContactCreated();
       onClose();
-    } catch (error: any) {
-      console.error("Error creating contact:", error);
-      const errorMessage = error.message || "Error creating contact. Please try again.";
-      setError(errorMessage);
-      alert(`Error: ${errorMessage}`);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setIsSubmitting(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className={`inline-form-container ${isOpen ? 'open' : ''}`}>
+    <div className={`inline-form-container ${isOpen ? "open" : ""}`}>
       <div className="inline-form-content">
         <div className="form-header">
-          <button className="form-close" onClick={onClose} type="button">
+          <button
+            className="form-close"
+            onClick={onClose}
+            type="button"
+            aria-label="Close form"
+          >
             ×
           </button>
         </div>
-
-        {error && (
-          <div style={{ 
-            padding: "10px", 
-            margin: "10px 0", 
-            backgroundColor: "#fee", 
-            color: "#c00",
-            borderRadius: "4px"
-          }}>
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="contact-form">
           <div className="form-group">
@@ -102,7 +77,7 @@ export default function NewContactModal({
               type="text"
               name="name"
               placeholder="Name"
-              value={formData.name}
+              value={values.name}
               onChange={handleChange}
               required
               className="form-input"
@@ -114,7 +89,7 @@ export default function NewContactModal({
               type="text"
               name="last_name"
               placeholder="Last Name"
-              value={formData.last_name}
+              value={values.last_name}
               onChange={handleChange}
               required
               className="form-input"
@@ -126,7 +101,7 @@ export default function NewContactModal({
               type="email"
               name="email"
               placeholder="Email"
-              value={formData.email}
+              value={values.email}
               onChange={handleChange}
               required
               className="form-input"
@@ -138,7 +113,7 @@ export default function NewContactModal({
               type="text"
               name="photo_profile"
               placeholder="Photo URL"
-              value={formData.photo_profile}
+              value={values.photo_profile}
               onChange={handleChange}
               className="form-input"
             />
@@ -149,7 +124,7 @@ export default function NewContactModal({
               <input
                 type="checkbox"
                 name="isfavorite"
-                checked={formData.isfavorite}
+                checked={values.isfavorite}
                 onChange={handleChange}
                 className="checkbox-input"
               />

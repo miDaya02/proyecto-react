@@ -1,17 +1,11 @@
+// app/contacts/editContact.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { updateContact } from "@/services/contactService";
-
-type Contact = {
-  id_contact: string;
-  name: string;
-  last_name: string;
-  email: string;
-  photo_profile: string | null;  // Ahora acepta null explícitamente
-  is_favorite: boolean;
-};
+import { useContacts } from "@/hooks/useContacts";
+import { useForm } from "@/hooks/useForm";
+import { Contact } from "@/types";
 
 type EditContactModalProps = {
   isOpen: boolean;
@@ -28,15 +22,17 @@ export default function EditContactModal({
   contact,
   onContactUpdated,
 }: EditContactModalProps) {
-  const [formData, setFormData] = useState({
+  const { editContact } = useContacts(userId);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const pathname = usePathname();
+
+  const { values, handleChange, setValues } = useForm({
     name: "",
     last_name: "",
     photo_profile: "",
     email: "",
     isfavorite: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const pathname = usePathname();
 
   // Cerrar modal automáticamente al cambiar de ruta
   useEffect(() => {
@@ -45,41 +41,33 @@ export default function EditContactModal({
     }
   }, [pathname]);
 
-  // Cargar datos del contacto cuando cambie - CORREGIDO
+  // Cargar datos del contacto cuando cambie
   useEffect(() => {
     if (contact) {
-      setFormData({
+      setValues({
         name: contact.name || "",
         last_name: contact.last_name || "",
-        photo_profile: contact.photo_profile || "",  // Convierte null a string vacío
+        photo_profile: contact.photo_profile || "",
         email: contact.email || "",
         isfavorite: contact.is_favorite || false,
       });
     }
-  }, [contact]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  }, [contact, setValues]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contact) return;
 
     setIsSubmitting(true);
-    try {
-      await updateContact(userId, contact.id_contact, formData);
+
+    const result = await editContact(contact.id_contact, values);
+
+    if (result.success) {
       onContactUpdated();
       onClose();
-    } catch (error) {
-      console.error("Error updating contact:", error);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setIsSubmitting(false);
   };
 
   if (!isOpen || !contact) return null;
@@ -89,12 +77,13 @@ export default function EditContactModal({
       className={`inline-form-container ${isOpen ? "open" : ""}`}
       onClick={onClose}
     >
-      <div
-        className="inline-form-content"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="inline-form-content" onClick={(e) => e.stopPropagation()}>
         <div className="form-header">
-          <button className="form-close" onClick={onClose}>
+          <button
+            className="form-close"
+            onClick={onClose}
+            aria-label="Close form"
+          >
             ×
           </button>
         </div>
@@ -106,7 +95,7 @@ export default function EditContactModal({
               type="text"
               name="name"
               placeholder="Name"
-              value={formData.name}
+              value={values.name}
               onChange={handleChange}
               required
             />
@@ -117,7 +106,7 @@ export default function EditContactModal({
               type="text"
               name="last_name"
               placeholder="Last Name"
-              value={formData.last_name}
+              value={values.last_name}
               onChange={handleChange}
               required
               className="form-input"
@@ -130,7 +119,7 @@ export default function EditContactModal({
               type="email"
               name="email"
               placeholder="Email"
-              value={formData.email}
+              value={values.email}
               onChange={handleChange}
               required
             />
@@ -142,7 +131,7 @@ export default function EditContactModal({
               type="text"
               name="photo_profile"
               placeholder="Photo URL"
-              value={formData.photo_profile}
+              value={values.photo_profile}
               onChange={handleChange}
             />
           </div>
@@ -153,7 +142,7 @@ export default function EditContactModal({
                 className="checkbox-input"
                 type="checkbox"
                 name="isfavorite"
-                checked={formData.isfavorite}
+                checked={values.isfavorite}
                 onChange={handleChange}
               />
               Enable like favorite

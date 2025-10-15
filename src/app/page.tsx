@@ -1,134 +1,73 @@
+// app/page.tsx
 "use client";
 
-import {
-  removeFromFavorites,
-  addToFavorites,
-  getFourContactsFavorite,
-  getNonFavoriteContactsByUserId,
-} from "@/services/contactService";
 import { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/hooks/useAuth";
+import { useContacts } from "@/hooks/useContacts";
+import ContactCard from "@/components/ContactCard";
 import NewContactModal from "./contacts/newContact";
-import { useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logout } from "@/redux/store";
 import Paginator from "./paginator/page";
-
-type Contact = {
-  id_contact: string;
-  name: string;
-  last_name: string;
-  email: string;
-  photo_profile: string;
-  is_favorite: boolean;
-};
-
-type PaginationInfo = {
-  currentPage: number;
-  totalPages: number;
-  totalContacts: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-};
+import { Contact } from "@/types";
 
 export default function Overview() {
-  const [favorites, setFavorites] = useState<Contact[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 1,
-    totalContacts: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const id = useAppSelector((state) => state.auth.id);
+  const { logout } = useAuth();
+  const {
+    contacts,
+    pagination,
+    loading,
+    fetchNonFavorites,
+    fetchTopFavorites,
+    toggleFavorite,
+  } = useContacts(id);
+
+  const [favorites, setFavorites] = useState<Contact[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const handleOpenModal = () => setIsModalOpen(true);
-    return () => window.removeEventListener('openNewContactModal', handleOpenModal);
-  }, []);
+    const loadData = async () => {
+      const topFavs = await fetchTopFavorites();
+      setFavorites(topFavs);
+      fetchNonFavorites();
+    };
 
-  const fetchData = async (page: number = 1) => {
-    if (!id) return;
-
-    setLoading(true);
-    try {
-      const [favoritesData, contactsData] = await Promise.all([
-        getFourContactsFavorite(id),
-        getNonFavoriteContactsByUserId(id, page, 16)
-      ]);
-      setFavorites(favoritesData);
-      setContacts(contactsData.contacts);
-      setPagination(contactsData.pagination);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [id]);
+    loadData();
+  }, [fetchNonFavorites, fetchTopFavorites]);
 
   const handlePageChange = (newPage: number) => {
-    fetchData(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchNonFavorites(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-
   const handleRemoveFavorite = async (contactId: string) => {
-    if (!id) return;
-    try {
-      await removeFromFavorites(id, contactId);
-
-      // Recargar ambas listas para obtener el siguiente favorito si existe
-      const [favoritesData, contactsData] = await Promise.all([
-        getFourContactsFavorite(id),
-        getNonFavoriteContactsByUserId(id, pagination.currentPage, 16)
-      ]);
-      setFavorites(favoritesData);
-      setContacts(contactsData.contacts);
-      setPagination(contactsData.pagination);
-    } catch (error) {
-      console.error("Error removing favorite:", error);
+    const result = await toggleFavorite(contactId, true);
+    if (result.success) {
+      const topFavs = await fetchTopFavorites();
+      setFavorites(topFavs);
+      fetchNonFavorites(pagination.currentPage);
     }
   };
 
   const handleAddFavorite = async (contactId: string) => {
-    if (!id) return;
-    try {
-      await addToFavorites(id, contactId);
-
-      // Recargar ambas listas sin cambiar de página
-      const [favoritesData, contactsData] = await Promise.all([
-        getFourContactsFavorite(id),
-        getNonFavoriteContactsByUserId(id, pagination.currentPage, 16)
-      ]);
-      setFavorites(favoritesData);
-      setContacts(contactsData.contacts);
-      setPagination(contactsData.pagination);
-    } catch (error) {
-      console.error("Error adding favorite:", error);
+    const result = await toggleFavorite(contactId, false);
+    if (result.success) {
+      const topFavs = await fetchTopFavorites();
+      setFavorites(topFavs);
+      fetchNonFavorites(pagination.currentPage);
     }
   };
 
   const handleContactCreated = async () => {
-    fetchData(1);
+    const topFavs = await fetchTopFavorites();
+    setFavorites(topFavs);
+    fetchNonFavorites(1);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("id");
-    localStorage.removeItem("token");
-    dispatch(logout());
-    router.push("/login");
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading && favorites.length === 0 && contacts.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "2rem" }}>Loading...</div>
+    );
   }
 
   return (
@@ -149,18 +88,16 @@ export default function Overview() {
             <p>There are no favorite contacts</p>
           ) : (
             favorites.map((contact) => (
-              <div key={contact.id_contact} className="contact-card">
-                <img src={contact.photo_profile || "/avatar.png"} alt={contact.name} className="avatar" />
-                <div className="info">
-                  <h3>{contact.name} {contact.last_name}</h3>
-                  <p>{contact.email}</p>
-                </div>
-                <div className="actions">
-                  <button className="remove" onClick={() => handleRemoveFavorite(contact.id_contact)}>
-                    <img src="/x.svg" className="iconx" alt="remove" /> Remove
-                  </button>
-                </div>
-              </div>
+              <ContactCard
+                key={contact.id_contact}
+                contact={contact}
+                onToggleFavorite={() =>
+                  handleRemoveFavorite(contact.id_contact)
+                }
+                showEdit={false}
+                showFavorite={true}
+                showDelete={false}
+              />
             ))
           )}
         </div>
@@ -173,22 +110,17 @@ export default function Overview() {
             <p>No contacts available</p>
           ) : (
             contacts.map((contact) => (
-              <div key={contact.id_contact} className="contact-card">
-                <img src={contact.photo_profile || "/avatar.png"} alt={contact.name} className="avatarc" />
-                <div className="info">
-                  <h3>{contact.name} {contact.last_name}</h3>
-                  <p>{contact.email}</p>
-                </div>
-                <div className="actions">
-                  <button className="favorite" onClick={() => handleAddFavorite(contact.id_contact)}>
-                    <img src="/favorite.svg" className="iconFavorite" alt="favorite" />
-                  </button>
-                </div>
-              </div>
+              <ContactCard
+                key={contact.id_contact}
+                contact={contact}
+                onToggleFavorite={() => handleAddFavorite(contact.id_contact)}
+                showEdit={false}
+                showFavorite={true}
+                showDelete={false}
+              />
             ))
           )}
         </div>
-
 
         <Paginator
           currentPage={pagination.currentPage}
@@ -198,7 +130,9 @@ export default function Overview() {
       </section>
 
       <footer className="footer">
-        <button className="log-out" onClick={() => handleLogout()}>Log Out</button>
+        <button className="log-out" onClick={logout}>
+          Log Out
+        </button>
       </footer>
     </>
   );
