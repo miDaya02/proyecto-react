@@ -1,4 +1,3 @@
-// hooks/useContacts.ts
 import { useState, useCallback } from "react";
 import { Contact, PaginationInfo } from "@/types";
 import {
@@ -152,13 +151,7 @@ export const useContacts = (userId: string | null) => {
           showToast("Added to favorites", "success");
         }
 
-        // Update local state
-        setContacts((prev) =>
-          prev.map((c) =>
-            c.id_contact === contactId ? { ...c, is_favorite: !isFavorite } : c
-          )
-        );
-
+        // NO actualizar el estado aquí - dejamos que el componente lo maneje
         return { success: true };
       } catch (error: any) {
         showToast(error.message || "Error updating favorite", "error");

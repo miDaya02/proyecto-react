@@ -1,4 +1,3 @@
-// app/contacts/newContact.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -21,6 +20,8 @@ export default function NewContactModal({
 }: NewContactModalProps) {
   const { addContact } = useContacts(userId);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const pathname = usePathname();
   const previousPathname = useRef(pathname);
 
@@ -32,7 +33,25 @@ export default function NewContactModal({
     isfavorite: false,
   });
 
-  // Cerrar modal solo cuando la ruta cambie
+  // Notificar cuando este modal se abre
+  useEffect(() => {
+    if (isOpen) {
+      window.dispatchEvent(new Event('newModalOpened'));
+    }
+  }, [isOpen]);
+
+  // Cerrar este modal si se abre el modal EDIT
+  useEffect(() => {
+    const handleEditModalOpen = () => {
+      if (isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('editModalOpened', handleEditModalOpen);
+    return () => window.removeEventListener('editModalOpened', handleEditModalOpen);
+  }, [isOpen, onClose]);
+
   useEffect(() => {
     if (previousPathname.current !== pathname && isOpen) {
       onClose();
@@ -40,19 +59,72 @@ export default function NewContactModal({
     previousPathname.current = pathname;
   }, [pathname, isOpen, onClose]);
 
+  // Manejar selección de archivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      // Validar tamaño (5MB máximo)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const result = await addContact(values);
+    // Si hay archivo, enviarlo como FormData
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('photo_profile', selectedFile);
+      formData.append('name', values.name);
+      formData.append('last_name', values.last_name);
+      formData.append('email', values.email);
+      formData.append('isfavorite', values.isfavorite.toString());
 
-    if (result.success) {
-      reset();
-      onContactCreated();
-      onClose();
+      const result = await addContact(formData);
+
+      if (result.success) {
+        reset();
+        setSelectedFile(null);
+        setPreviewUrl("");
+        onContactCreated();
+        onClose();
+      }
+    } else {
+      // Si no hay archivo, enviar como JSON normal
+      const result = await addContact(values);
+
+      if (result.success) {
+        reset();
+        onContactCreated();
+        onClose();
+      }
     }
 
     setIsSubmitting(false);
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
   };
 
   if (!isOpen) return null;
@@ -108,16 +180,29 @@ export default function NewContactModal({
             />
           </div>
 
+          {/* Opción: Subir archivo O usar URL */}
           <div className="form-group">
-            <input
-              type="text"
-              name="photo_profile"
-              placeholder="Photo URL"
-              value={values.photo_profile}
-              onChange={handleChange}
-              className="form-input"
-            />
+            <label className="file-label">
+              Upload Photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="file-input"
+              />
+            </label>
+
+            {previewUrl && (
+              <div className="preview-container">
+                <img src={previewUrl} alt="Preview" className="preview-image" />
+                <button type="button" onClick={clearFile} className="clear-button">
+                  Remove
+                </button>
+              </div>
+            )}
           </div>
+
+
 
           <div className="form-group checkbox-group">
             <label className="checkbox-label">

@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useContacts } from "@/hooks/useContacts";
 import ContactCard from "@/components/ContactCard";
 import NewContactModal from "./contacts/newContact";
-import Paginator from "./paginator/page";
 import { Contact } from "@/types";
 
 export default function Overview() {
@@ -35,10 +33,6 @@ export default function Overview() {
     loadData();
   }, [fetchNonFavorites, fetchTopFavorites]);
 
-  const handlePageChange = (newPage: number) => {
-    fetchNonFavorites(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   const handleRemoveFavorite = async (contactId: string) => {
     const result = await toggleFavorite(contactId, true);
@@ -103,31 +97,26 @@ export default function Overview() {
         </div>
       </section>
 
-      <section className="card">
-        <h2>Contact List</h2>
-        <div className="cards-container">
-          {contacts.length === 0 ? (
-            <p>No contacts available</p>
-          ) : (
-            contacts.map((contact) => (
-              <ContactCard
-                key={contact.id_contact}
-                contact={contact}
-                onToggleFavorite={() => handleAddFavorite(contact.id_contact)}
-                showEdit={false}
-                showFavorite={true}
-                showDelete={false}
-              />
-            ))
-          )}
-        </div>
-
-        <Paginator
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          onPageChange={handlePageChange}
+     <section className="card">
+  <h2>Contact List</h2>
+  <div className="cards-container">
+    {contacts.length === 0 ? (
+      <p>No contacts available</p>
+    ) : (
+      contacts.slice(0, 12).map((contact) => (
+        <ContactCard
+          key={contact.id_contact}
+          contact={contact}
+          onToggleFavorite={() => handleAddFavorite(contact.id_contact)}
+          showEdit={false}
+          showFavorite={true}
+          showDelete={false}
         />
-      </section>
+      ))
+    )}
+  </div>
+</section>
+ 
 
       <footer className="footer">
         <button className="log-out" onClick={logout}>

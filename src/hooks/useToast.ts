@@ -1,4 +1,3 @@
-// hooks/useToast.ts
 import { useCallback } from "react";
 import { ToastType } from "@/types";
 

@@ -1,4 +1,3 @@
-// hooks/useAuth.ts
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setCredentials, logout as logoutAction } from "@/redux/store";

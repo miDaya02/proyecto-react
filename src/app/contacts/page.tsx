@@ -1,4 +1,3 @@
-// app/contacts/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,6 +5,7 @@ import { useAppSelector } from "@/redux/hooks";
 import { useContacts } from "@/hooks/useContacts";
 import ContactCard from "@/components/ContactCard";
 import EditContactModal from "./editContact";
+import NewContactModal from "./newContact";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Paginator from "../paginator/page";
 import { Contact } from "@/types";
@@ -23,6 +23,7 @@ export default function Contacts() {
   
   const [localContacts, setLocalContacts] = useState<Contact[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -38,10 +39,12 @@ export default function Contacts() {
     fetchContacts();
   }, [fetchContacts]);
 
+  // Sincronizar contactos cuando cambian desde el servidor
   useEffect(() => {
     setLocalContacts(contacts);
   }, [contacts]);
 
+  
   const handlePageChange = (newPage: number) => {
     fetchContacts(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -51,7 +54,7 @@ export default function Contacts() {
     contactId: string,
     isFavorite: boolean
   ) => {
-    // Actualización optimista: actualiza el estado local inmediatamente
+    // Actualización optimista instantánea
     setLocalContacts(prev => 
       prev.map(c => 
         c.id_contact === contactId 
@@ -60,9 +63,11 @@ export default function Contacts() {
       )
     );
 
+    // Ejecutar la actualización en segundo plano
     const result = await toggleFavorite(contactId, isFavorite);
+    
+    // Si falla, revertir al estado del servidor
     if (!result.success) {
-      // Si falla, restaura el estado original
       setLocalContacts(contacts);
     }
   };
@@ -78,39 +83,71 @@ export default function Contacts() {
   const handleConfirmDelete = async () => {
     if (!confirmDialog.contactId) return;
     
-    // Actualización optimista
-    setLocalContacts(prev => prev.filter(c => c.id_contact !== confirmDialog.contactId));
+    // Actualización optimista: eliminar visualmente de inmediato
+    const contactToDelete = confirmDialog.contactId;
+    setLocalContacts(prev => prev.filter(c => c.id_contact !== contactToDelete));
     setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
 
-    const result = await removeContact(confirmDialog.contactId);
+    // Ejecutar eliminación en segundo plano
+    const result = await removeContact(contactToDelete);
+    
+    // Si falla, recargar desde el servidor
     if (!result.success) {
-      // Si falla, recarga
       fetchContacts(pagination.currentPage);
     }
   };
 
   const handleEditContact = (contact: Contact) => {
+    // Cerrar modal de nuevo contacto si está abierto
+    setIsNewModalOpen(false);
+    
     setSelectedContact(contact);
     setIsEditModalOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleOpenNewContact = () => {
+    // Cerrar modal de edición si está abierto
+    setIsEditModalOpen(false);
+    setSelectedContact(null);
+    
+    setIsNewModalOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleContactUpdated = () => {
-    // Recarga solo cuando se edita (necesario para obtener cambios del servidor)
+    // Después de editar, recargar para obtener datos actualizados
     fetchContacts(pagination.currentPage);
+  };
+
+  const handleContactCreated = () => {
+    // Después de crear, recargar para obtener datos actualizados
+    fetchContacts(pagination.currentPage);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedContact(null);
+  };
+
+  const handleCloseNewModal = () => {
+    setIsNewModalOpen(false);
   };
 
   return (
     <>
       {id && (
-        <EditContactModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          userId={id}
-          contact={selectedContact}
-          onContactUpdated={handleContactUpdated}
-        />
+        <>
+          <EditContactModal
+            isOpen={isEditModalOpen}
+            onClose={handleCloseEditModal}
+            userId={id}
+            contact={selectedContact}
+            onContactUpdated={handleContactUpdated}
+          />
+        </>
       )}
+      
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         onClose={() =>
@@ -122,6 +159,7 @@ export default function Contacts() {
         confirmText="Delete"
         cancelText="Cancel"
       />
+      
       <section className="card contacts-page">
         <h2>Contact List</h2>
         <div className="cards-container">

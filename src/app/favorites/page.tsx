@@ -1,4 +1,3 @@
-// app/favorites/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -35,6 +34,7 @@ export default function Favorites() {
     fetchFavorites();
   }, [fetchFavorites]);
 
+  // Sincronizar contactos cuando cambian desde el servidor
   useEffect(() => {
     setLocalContacts(contacts);
   }, [contacts]);
@@ -45,12 +45,14 @@ export default function Favorites() {
   };
 
   const handleRemoveFavorite = async (contactId: string) => {
-    // Actualización optimista: remueve visualmente antes de confirmar
+    // Actualización optimista: eliminar visualmente de inmediato
     setLocalContacts(prev => prev.filter(c => c.id_contact !== contactId));
     
+    // Ejecutar la actualización en segundo plano
     const result = await toggleFavorite(contactId, true);
+    
+    // Si falla, revertir al estado del servidor
     if (!result.success) {
-      // Si falla, restaura el estado
       setLocalContacts(contacts);
     }
   };
@@ -66,13 +68,16 @@ export default function Favorites() {
   const handleConfirmDelete = async () => {
     if (!confirmDialog.contactId) return;
 
-    // Actualización optimista
-    setLocalContacts(prev => prev.filter(c => c.id_contact !== confirmDialog.contactId));
+    // Actualización optimista: eliminar visualmente de inmediato
+    const contactToDelete = confirmDialog.contactId;
+    setLocalContacts(prev => prev.filter(c => c.id_contact !== contactToDelete));
     setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
 
-    const result = await removeContact(confirmDialog.contactId);
+    // Ejecutar eliminación en segundo plano
+    const result = await removeContact(contactToDelete);
+    
+    // Si falla, recargar desde el servidor
     if (!result.success) {
-      // Si falla, recarga los datos
       fetchFavorites(pagination.currentPage);
     }
   };

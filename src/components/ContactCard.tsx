@@ -1,5 +1,5 @@
-// components/ContactCard.tsx
 import { Contact } from "@/types";
+import { getImageUrl } from "@/app/utils/imageUtils";
 
 type ContactCardProps = {
   contact: Contact;
@@ -35,7 +35,7 @@ export default function ContactCard({
       )}
 
       <img
-        src={contact.photo_profile || defaultAvatar}
+        src={getImageUrl(contact.photo_profile) || defaultAvatar}
         alt={`${contact.name} ${contact.last_name}`}
         className={contact.is_favorite ? "avatar" : "avatarc"}
         onError={(e) => {

@@ -1,4 +1,3 @@
-// hooks/useForm.ts
 import { useState, ChangeEvent } from "react";
 
 export const useForm = <T extends Record<string, any>>(initialValues: T) => {

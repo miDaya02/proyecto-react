@@ -1,4 +1,3 @@
-// app/contacts/editContact.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,6 +23,8 @@ export default function EditContactModal({
 }: EditContactModalProps) {
   const { editContact } = useContacts(userId);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const pathname = usePathname();
 
   const { values, handleChange, setValues } = useForm({
@@ -33,6 +34,24 @@ export default function EditContactModal({
     email: "",
     isfavorite: false,
   });
+  // Notificar cuando este modal se abre
+  useEffect(() => {
+    if (isOpen) {
+      window.dispatchEvent(new Event('editModalOpened'));
+    }
+  }, [isOpen]);
+
+  // Cerrar este modal si se abre el modal NEW
+  useEffect(() => {
+    const handleNewModalOpen = () => {
+      if (isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('newModalOpened', handleNewModalOpen);
+    return () => window.removeEventListener('newModalOpened', handleNewModalOpen);
+  }, [isOpen, onClose]);
 
   // Cerrar modal automáticamente al cambiar de ruta
   useEffect(() => {
@@ -51,8 +70,55 @@ export default function EditContactModal({
         email: contact.email || "",
         isfavorite: contact.is_favorite || false,
       });
+
+      // Establecer preview de la foto actual si existe
+      if (contact.photo_profile) {
+        setPreviewUrl(`http://localhost:4000${contact.photo_profile}`);
+      } else {
+        setPreviewUrl("");
+      }
+
+      // Limpiar archivo seleccionado
+      setSelectedFile(null);
     }
   }, [contact, setValues]);
+
+  // Manejar selección de archivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      // Validar tamaño (5MB máximo)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    // Restaurar preview de la foto original si existe
+    if (contact?.photo_profile) {
+      setPreviewUrl(`http://localhost:4000${contact.photo_profile}`);
+    } else {
+      setPreviewUrl("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,11 +126,32 @@ export default function EditContactModal({
 
     setIsSubmitting(true);
 
-    const result = await editContact(contact.id_contact, values);
+    // Si hay un nuevo archivo seleccionado, enviarlo como FormData
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('photo_profile', selectedFile);
+      formData.append('name', values.name);
+      formData.append('last_name', values.last_name);
+      formData.append('email', values.email);
+      formData.append('is_favorite', values.isfavorite.toString());
 
-    if (result.success) {
-      onContactUpdated();
-      onClose();
+      // Si quiere mantener la foto actual sin cambiar, no enviar nada
+      // El backend mantendrá la foto existente
+
+      const result = await editContact(contact.id_contact, formData);
+
+      if (result.success) {
+        onContactUpdated();
+        onClose();
+      }
+    } else {
+      // Si no hay archivo nuevo, enviar como JSON
+      const result = await editContact(contact.id_contact, values);
+
+      if (result.success) {
+        onContactUpdated();
+        onClose();
+      }
     }
 
     setIsSubmitting(false);
@@ -125,15 +212,28 @@ export default function EditContactModal({
             />
           </div>
 
+          {/* Opción: Subir archivo O usar URL */}
           <div className="form-group">
-            <input
-              className="form-input"
-              type="text"
-              name="photo_profile"
-              placeholder="Photo URL"
-              value={values.photo_profile}
-              onChange={handleChange}
-            />
+            <label className="file-label">
+              Upload New Photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="file-input"
+              />
+            </label>
+
+            {previewUrl && (
+              <div className="preview-container">
+                <img src={previewUrl} alt="Preview" className="preview-image" />
+                {selectedFile && (
+                  <button type="button" onClick={clearFile} className="clear-button">
+                    Remove New Photo
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="checkbox-group">

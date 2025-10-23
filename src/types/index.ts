@@ -1,4 +1,3 @@
-// types/index.ts
 export type Contact = {
   id_contact: string;
   name: string;
