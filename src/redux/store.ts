@@ -1,5 +1,5 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-
+import contactsReducer from './contactsSlices'; 
 interface AuthState {
   id: string | null;
   token: string | null;
@@ -21,7 +21,6 @@ const authSlice = createSlice({
     logout: (state) => {
       state.id = null;
       state.token = null;
-      // Limpiar localStorage también
       if (typeof window !== 'undefined') {
         localStorage.removeItem('id');
         localStorage.removeItem('token');
@@ -35,6 +34,7 @@ export const { setCredentials, logout } = authSlice.actions;
 export const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
+    contacts: contactsReducer, // 
   },
 });
 

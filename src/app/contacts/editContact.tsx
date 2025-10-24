@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useContacts } from "@/hooks/useContacts";
 import { useForm } from "@/hooks/useForm";
 import { Contact } from "@/types";
+import { getImageUrl } from "@/utils/imageUtils"; 
 
 type EditContactModalProps = {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export default function EditContactModal({
     email: "",
     isfavorite: false,
   });
+
   // Notificar cuando este modal se abre
   useEffect(() => {
     if (isOpen) {
@@ -71,9 +73,9 @@ export default function EditContactModal({
         isfavorite: contact.is_favorite || false,
       });
 
-      // Establecer preview de la foto actual si existe
+      // ✅ CORREGIDO: Usar getImageUrl en lugar de hardcodear URL
       if (contact.photo_profile) {
-        setPreviewUrl(`http://localhost:4000${contact.photo_profile}`);
+        setPreviewUrl(getImageUrl(contact.photo_profile));
       } else {
         setPreviewUrl("");
       }
@@ -112,9 +114,9 @@ export default function EditContactModal({
 
   const clearFile = () => {
     setSelectedFile(null);
-    // Restaurar preview de la foto original si existe
+    // ✅ CORREGIDO: Usar getImageUrl aquí también
     if (contact?.photo_profile) {
-      setPreviewUrl(`http://localhost:4000${contact.photo_profile}`);
+      setPreviewUrl(getImageUrl(contact.photo_profile));
     } else {
       setPreviewUrl("");
     }
@@ -134,9 +136,6 @@ export default function EditContactModal({
       formData.append('last_name', values.last_name);
       formData.append('email', values.email);
       formData.append('is_favorite', values.isfavorite.toString());
-
-      // Si quiere mantener la foto actual sin cambiar, no enviar nada
-      // El backend mantendrá la foto existente
 
       const result = await editContact(contact.id_contact, formData);
 
@@ -208,11 +207,12 @@ export default function EditContactModal({
               placeholder="Email"
               value={values.email}
               onChange={handleChange}
+              pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+              title="Enter a valid email address"
               required
             />
           </div>
 
-          {/* Opción: Subir archivo O usar URL */}
           <div className="form-group">
             <label className="file-label">
               Upload New Photo

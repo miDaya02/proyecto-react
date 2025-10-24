@@ -1,5 +1,5 @@
 import API_URL, {handleResponse} from "./api";
-
+import logger from "@/utils/logger"; // ✅ IMPORTAR LOGGER
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
@@ -11,6 +11,8 @@ const getHeaders = () => {
 
 // Login 
 export const userLogin = async (email: string, password: string) => {
+  logger.api('POST', '/users/login'); // ✅ USAR LOGGER
+  
   const response = await fetch(`${API_URL}/users/login`, {
     method: 'POST',
     headers: {
@@ -18,14 +20,14 @@ export const userLogin = async (email: string, password: string) => {
     },
     body: JSON.stringify({ email, password }),
   });
-  console.log("Response status:", response);
+  
   return handleResponse(response);
 };
 
-
-
 // Register
 export const userRegister = async (name: string, lastname: string, email: string, password: string) => {
+  logger.api('POST', '/users/register'); // ✅ USAR LOGGER
+  
   const response = await fetch(`${API_URL}/users/register`, {
     method: 'POST', 
     headers: {
@@ -38,9 +40,11 @@ export const userRegister = async (name: string, lastname: string, email: string
 
 // getUserById - SÍ necesita token
 export const getUserById = async (id_user: string) => {
+  logger.api('GET', `/users/${id_user}`); // ✅ USAR LOGGER
+  
   const response = await fetch(`${API_URL}/users/${id_user}`, {
     method: 'GET',
-    headers: getHeaders(), // send to token
+    headers: getHeaders(),
   });
   return handleResponse(response);
 };

@@ -10,6 +10,8 @@ import { Contact } from "@/types";
 
 export default function Favorites() {
   const id = useAppSelector((state) => state.auth.id);
+  
+  // ✅ Todo viene de Redux (sin localContacts)
   const {
     contacts,
     pagination,
@@ -19,7 +21,6 @@ export default function Favorites() {
     removeContact,
   } = useContacts(id);
 
-  const [localContacts, setLocalContacts] = useState<Contact[]>([]);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     contactId: string | null;
@@ -34,27 +35,24 @@ export default function Favorites() {
     fetchFavorites();
   }, [fetchFavorites]);
 
-  // Sincronizar contactos cuando cambian desde el servidor
+  // ✅ Escuchar evento de contacto creado desde navbar
   useEffect(() => {
-    setLocalContacts(contacts);
-  }, [contacts]);
+    const handleContactCreated = () => {
+      fetchFavorites(1);
+    };
+
+    window.addEventListener('contactCreated', handleContactCreated);
+    return () => window.removeEventListener('contactCreated', handleContactCreated);
+  }, [fetchFavorites]);
 
   const handlePageChange = (newPage: number) => {
     fetchFavorites(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // ✅ Simplificado: Redux maneja todo
   const handleRemoveFavorite = async (contactId: string) => {
-    // Actualización optimista: eliminar visualmente de inmediato
-    setLocalContacts(prev => prev.filter(c => c.id_contact !== contactId));
-    
-    // Ejecutar la actualización en segundo plano
-    const result = await toggleFavorite(contactId, true);
-    
-    // Si falla, revertir al estado del servidor
-    if (!result.success) {
-      setLocalContacts(contacts);
-    }
+    await toggleFavorite(contactId, true);
   };
 
   const handleDeleteClick = (contact: Contact) => {
@@ -65,21 +63,14 @@ export default function Favorites() {
     });
   };
 
+  // ✅ Simplificado: Redux maneja todo
   const handleConfirmDelete = async () => {
     if (!confirmDialog.contactId) return;
 
-    // Actualización optimista: eliminar visualmente de inmediato
     const contactToDelete = confirmDialog.contactId;
-    setLocalContacts(prev => prev.filter(c => c.id_contact !== contactToDelete));
     setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
-
-    // Ejecutar eliminación en segundo plano
-    const result = await removeContact(contactToDelete);
     
-    // Si falla, recargar desde el servidor
-    if (!result.success) {
-      fetchFavorites(pagination.currentPage);
-    }
+    await removeContact(contactToDelete);
   };
 
   return (
@@ -99,12 +90,12 @@ export default function Favorites() {
       <section className="card">
         <h2>Favorites</h2>
         <div className="cards-container">
-          {loading && localContacts.length === 0 ? (
+          {loading && contacts.length === 0 ? (
             <p>Loading...</p>
-          ) : localContacts.length === 0 ? (
+          ) : contacts.length === 0 ? (
             <p>There are no favorite contacts</p>
           ) : (
-            localContacts.map((contact) => (
+            contacts.map((contact) => (
               <ContactCard
                 key={contact.id_contact}
                 contact={contact}

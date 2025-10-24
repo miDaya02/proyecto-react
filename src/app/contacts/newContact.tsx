@@ -151,6 +151,8 @@ export default function NewContactModal({
               placeholder="Name"
               value={values.name}
               onChange={handleChange}
+              minLength={2}
+              maxLength={50}
               required
               className="form-input"
             />
@@ -163,6 +165,8 @@ export default function NewContactModal({
               placeholder="Last Name"
               value={values.last_name}
               onChange={handleChange}
+              minLength={2}
+              maxLength={50}
               required
               className="form-input"
             />
@@ -175,12 +179,13 @@ export default function NewContactModal({
               placeholder="Email"
               value={values.email}
               onChange={handleChange}
+              pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+              title="Enter a valid email address (e.g., example@domain.com)"
               required
               className="form-input"
             />
           </div>
 
-          {/* Opción: Subir archivo O usar URL */}
           <div className="form-group">
             <label className="file-label">
               Upload Photo
@@ -201,8 +206,6 @@ export default function NewContactModal({
               </div>
             )}
           </div>
-
-
 
           <div className="form-group checkbox-group">
             <label className="checkbox-label">

@@ -1,5 +1,5 @@
 import { Contact } from "@/types";
-import { getImageUrl } from "@/app/utils/imageUtils";
+import { getImageUrl } from "@/utils/imageUtils";
 
 type ContactCardProps = {
   contact: Contact;

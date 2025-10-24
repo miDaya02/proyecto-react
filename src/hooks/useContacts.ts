@@ -1,5 +1,16 @@
-import { useState, useCallback } from "react";
-import { Contact, PaginationInfo } from "@/types";
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  setContacts,
+  setFavorites,
+  setPagination,
+  setLoading,
+  setError,
+  addContactOptimistic,
+  updateContactOptimistic,
+  deleteContactOptimistic,
+  toggleFavoriteOptimistic,
+} from "@/redux/contactsSlices";
 import {
   getContacts,
   getFavoriteContactsByUserId,
@@ -14,88 +25,95 @@ import {
 import { useToast } from "./useToast";
 
 export const useContacts = (userId: string | null) => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    currentPage: 1,
-    totalPages: 1,
-    totalContacts: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const { showToast } = useToast();
+
+  // ✅ Obtener datos desde Redux
+  const contacts = useAppSelector((state) => state.contacts.contacts);
+  const favorites = useAppSelector((state) => state.contacts.favorites);
+  const pagination = useAppSelector((state) => state.contacts.pagination);
+  const loading = useAppSelector((state) => state.contacts.loading);
 
   const fetchContacts = useCallback(
     async (page: number = 1, limit: number = 16) => {
       if (!userId) return;
 
-      setLoading(true);
+      dispatch(setLoading(true));
       try {
         const data = await getContacts(userId, page, limit);
-        setContacts(data.contacts);
-        setPagination(data.pagination);
+        dispatch(setContacts(data.contacts));
+        dispatch(setPagination(data.pagination));
       } catch (error: any) {
+        dispatch(setError(error.message));
         showToast(error.message || "Error fetching contacts", "error");
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   const fetchFavorites = useCallback(
     async (page: number = 1, limit: number = 16) => {
       if (!userId) return;
 
-      setLoading(true);
+      dispatch(setLoading(true));
       try {
         const data = await getFavoriteContactsByUserId(userId, page, limit);
-        setContacts(data.contacts);
-        setPagination(data.pagination);
+        dispatch(setContacts(data.contacts));
+        dispatch(setPagination(data.pagination));
       } catch (error: any) {
+        dispatch(setError(error.message));
         showToast(error.message || "Error fetching favorites", "error");
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   const fetchNonFavorites = useCallback(
     async (page: number = 1, limit: number = 16) => {
       if (!userId) return;
 
-      setLoading(true);
+      dispatch(setLoading(true));
       try {
         const data = await getNonFavoriteContactsByUserId(userId, page, limit);
-        setContacts(data.contacts);
-        setPagination(data.pagination);
+        dispatch(setContacts(data.contacts));
+        dispatch(setPagination(data.pagination));
       } catch (error: any) {
+        dispatch(setError(error.message));
         showToast(error.message || "Error fetching contacts", "error");
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   const fetchTopFavorites = useCallback(async () => {
     if (!userId) return [];
 
     try {
-      return await getFourContactsFavorite(userId);
+      const data = await getFourContactsFavorite(userId);
+      dispatch(setFavorites(data));
+      return data;
     } catch (error: any) {
       showToast(error.message || "Error fetching top favorites", "error");
       return [];
     }
-  }, [userId, showToast]);
+  }, [userId, dispatch, showToast]);
 
   const addContact = useCallback(
     async (contactData: any) => {
       if (!userId) return { success: false };
 
       try {
-        await createContact(userId, contactData);
+        const newContact = await createContact(userId, contactData);
+        
+        // ✅ Actualización optimista
+        dispatch(addContactOptimistic(newContact));
+        
         showToast("Contact created successfully", "success");
         return { success: true };
       } catch (error: any) {
@@ -103,7 +121,7 @@ export const useContacts = (userId: string | null) => {
         return { success: false, error: error.message };
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   const editContact = useCallback(
@@ -111,7 +129,11 @@ export const useContacts = (userId: string | null) => {
       if (!userId) return { success: false };
 
       try {
-        await updateContact(userId, contactId, contactData);
+        const updatedContact = await updateContact(userId, contactId, contactData);
+        
+        // ✅ Actualización optimista
+        dispatch(updateContactOptimistic(updatedContact));
+        
         showToast("Contact updated successfully", "success");
         return { success: true };
       } catch (error: any) {
@@ -119,28 +141,36 @@ export const useContacts = (userId: string | null) => {
         return { success: false, error: error.message };
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   const removeContact = useCallback(
     async (contactId: string) => {
       if (!userId) return { success: false };
 
+      // ✅ Actualización optimista
+      dispatch(deleteContactOptimistic(contactId));
+
       try {
         await deleteContact(userId, contactId);
         showToast("Contact deleted successfully", "success");
         return { success: true };
       } catch (error: any) {
+        // Si falla, recargar para revertir
+        fetchContacts(pagination.currentPage);
         showToast(error.message || "Error deleting contact", "error");
         return { success: false, error: error.message };
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast, fetchContacts, pagination.currentPage]
   );
 
   const toggleFavorite = useCallback(
     async (contactId: string, isFavorite: boolean) => {
       if (!userId) return { success: false };
+
+      // ✅ Actualización optimista
+      dispatch(toggleFavoriteOptimistic({ contactId, isFavorite: !isFavorite }));
 
       try {
         if (isFavorite) {
@@ -151,18 +181,20 @@ export const useContacts = (userId: string | null) => {
           showToast("Added to favorites", "success");
         }
 
-        // NO actualizar el estado aquí - dejamos que el componente lo maneje
         return { success: true };
       } catch (error: any) {
+        // Si falla, revertir
+        dispatch(toggleFavoriteOptimistic({ contactId, isFavorite }));
         showToast(error.message || "Error updating favorite", "error");
         return { success: false, error: error.message };
       }
     },
-    [userId, showToast]
+    [userId, dispatch, showToast]
   );
 
   return {
     contacts,
+    favorites,
     pagination,
     loading,
     fetchContacts,
@@ -173,6 +205,5 @@ export const useContacts = (userId: string | null) => {
     editContact,
     removeContact,
     toggleFavorite,
-    setContacts,
   };
 };
