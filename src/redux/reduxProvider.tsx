@@ -5,46 +5,61 @@ import { store } from './store';
 import { ReactNode, useEffect, useState } from 'react';
 import { setCredentials, logout } from './store';
 import { useRouter } from 'next/navigation';
-import logger from '@/utils/logger'; // ✅ IMPORTAR LOGGER
+import LoadingScreen from '../components/LoadingScreen';
 
 function AuthInitializer({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
 
-  // ✅ Cargar credenciales al inicio
+  // ✅ Cargar credenciales al inicio y verificar expiración
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const id = localStorage.getItem('id');
       const token = localStorage.getItem('token');
+      const expiry = localStorage.getItem('token_expiry');
       
-      if (id && token) {
+      // Verificar si expiró
+      const isExpired = expiry && Date.now() > parseInt(expiry, 10);
+      
+      if (id && token && !isExpired) {
         store.dispatch(setCredentials({ id, token }));
+      } else if (isExpired) {
+        // Limpiar si expiró
+        localStorage.removeItem('id');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expiry');
+        store.dispatch(logout());
       } else {
         store.dispatch(logout());
       }
+      
       setIsInitialized(true);
     }
   }, []);
 
-  // ✅ OPTIMIZADO: Solo escuchar cambios de storage (otras pestañas)
+  // Sincronización entre pestañas (solo cambios de storage)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       // Solo actuar si cambió el token
-      if (e.key === 'token') {
-        const currentToken = store.getState().auth.token;
+      if (e.key !== 'token') return;
+      
+      const currentToken = store.getState().auth.token;
+      
+      if (!e.newValue && currentToken) {
+        // Token eliminado en otra pestaña
+        localStorage.removeItem('id');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expiry');
+        store.dispatch(logout());
+        router.push('/login');
+      } else if (e.newValue && !currentToken) {
+        // Token agregado en otra pestaña
+        const id = localStorage.getItem('id');
+        const expiry = localStorage.getItem('token_expiry');
+        const isExpired = expiry && Date.now() > parseInt(expiry, 10);
         
-        if (!e.newValue && currentToken) {
-          // Token eliminado en otra pestaña
-          console.log('Token eliminado en otra pestaña - cerrando sesión');
-          store.dispatch(logout());
-          router.push('/login');
-        } else if (e.newValue && !currentToken) {
-          // Token agregado en otra pestaña (login en otra pestaña)
-          const id = localStorage.getItem('id');
-          if (id && e.newValue) {
-            console.log('Login detectado en otra pestaña');
-            store.dispatch(setCredentials({ id, token: e.newValue }));
-          }
+        if (id && e.newValue && !isExpired) {
+          store.dispatch(setCredentials({ id, token: e.newValue }));
         }
       }
     };
@@ -53,39 +68,39 @@ function AuthInitializer({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [router]);
 
-  // ✅ Verificar auth en cambios de ruta
+  // ✅ Verificar auth en navegación
   useEffect(() => {
-    const checkAuthOnNavigation = () => {
+    const checkAuth = () => {
       const token = localStorage.getItem('token');
+      const expiry = localStorage.getItem('token_expiry');
       const currentToken = store.getState().auth.token;
       const pathname = window.location.pathname;
       const publicRoutes = ['/login', '/register'];
       
+      // Verificar si expiró
+      const isExpired = expiry && Date.now() > parseInt(expiry, 10);
+      
+      if (isExpired) {
+        localStorage.removeItem('id');
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expiry');
+        store.dispatch(logout());
+        router.push('/login');
+        return;
+      }
+      
       // Si no hay token y está en ruta protegida
       if (!token && !currentToken && !publicRoutes.includes(pathname)) {
-        console.log('Sin token - redirigiendo a login');
         store.dispatch(logout());
         router.push('/login');
       }
     };
 
-    // Verificar al montar
-    checkAuthOnNavigation();
+    checkAuth();
   }, [router]);
 
   if (!isInitialized) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '1rem',
-        color: '#6b7280'
-      }}>
-        Loading...
-      </div>
-    ); 
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

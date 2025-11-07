@@ -6,12 +6,12 @@ import { useContacts } from "@/hooks/useContacts";
 import ContactCard from "@/components/ContactCard";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Paginator from "../paginator/page";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Contact } from "@/types";
 
 export default function Favorites() {
   const id = useAppSelector((state) => state.auth.id);
   
-  // ✅ Todo viene de Redux (sin localContacts)
   const {
     contacts,
     pagination,
@@ -21,6 +21,7 @@ export default function Favorites() {
     removeContact,
   } = useContacts(id);
 
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     contactId: string | null;
@@ -31,18 +32,40 @@ export default function Favorites() {
     contactName: "",
   });
 
+  // ✅ Cargar favoritos al montar
   useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
+    let cancelled = false;
 
-  // ✅ Escuchar evento de contacto creado desde navbar
-  useEffect(() => {
-    const handleContactCreated = () => {
-      fetchFavorites(1);
+    const loadData = async () => {
+      if (cancelled) return;
+      
+      await fetchFavorites(1);
+      
+      // Esperar mínimo 1 segundo para el loading screen
+      setTimeout(() => {
+        if (!cancelled) {
+          setIsInitialLoading(false);
+        }
+      }, 500);
     };
 
-    window.addEventListener('contactCreated', handleContactCreated);
-    return () => window.removeEventListener('contactCreated', handleContactCreated);
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchFavorites]);
+
+  // ✅ Escuchar cuando se crea un contacto desde navbar
+  useEffect(() => {
+    const handleContactCreated = (e: CustomEvent) => {
+      if (e.detail?.refresh) {
+        fetchFavorites(1);
+      }
+    };
+
+    window.addEventListener('contactCreated', handleContactCreated as EventListener);
+    return () => window.removeEventListener('contactCreated', handleContactCreated as EventListener);
   }, [fetchFavorites]);
 
   const handlePageChange = (newPage: number) => {
@@ -50,9 +73,21 @@ export default function Favorites() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ✅ Simplificado: Redux maneja todo
   const handleRemoveFavorite = async (contactId: string) => {
     await toggleFavorite(contactId, true);
+    // toggleFavorite recargará automáticamente, pero como quitamos de favoritos
+    // necesitamos recargar la lista de favoritos específicamente
+    
+    // Si solo queda 1 contacto en la página actual y no es la primera, ir a la anterior
+    const shouldGoToPrevPage = 
+      pagination.currentPage > 1 && 
+      contacts.length === 1;
+    
+    const targetPage = shouldGoToPrevPage 
+      ? pagination.currentPage - 1 
+      : pagination.currentPage;
+    
+    await fetchFavorites(targetPage);
   };
 
   const handleDeleteClick = (contact: Contact) => {
@@ -63,7 +98,6 @@ export default function Favorites() {
     });
   };
 
-  // ✅ Simplificado: Redux maneja todo
   const handleConfirmDelete = async () => {
     if (!confirmDialog.contactId) return;
 
@@ -71,7 +105,23 @@ export default function Favorites() {
     setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
     
     await removeContact(contactToDelete);
+    
+    // Si solo queda 1 contacto en la página actual y no es la primera, ir a la anterior
+    const shouldGoToPrevPage = 
+      pagination.currentPage > 1 && 
+      contacts.length === 1;
+    
+    const targetPage = shouldGoToPrevPage 
+      ? pagination.currentPage - 1 
+      : pagination.currentPage;
+    
+    await fetchFavorites(targetPage);
   };
+
+  // Mostrar loading screen en carga inicial
+  if (isInitialLoading) {
+    return <LoadingScreen duration={500} />;
+  }
 
   return (
     <>
@@ -90,9 +140,7 @@ export default function Favorites() {
       <section className="card">
         <h2>Favorites</h2>
         <div className="cards-container">
-          {loading && contacts.length === 0 ? (
-            <p>Loading...</p>
-          ) : contacts.length === 0 ? (
+          {contacts.length === 0 ? (
             <p>There are no favorite contacts</p>
           ) : (
             contacts.map((contact) => (

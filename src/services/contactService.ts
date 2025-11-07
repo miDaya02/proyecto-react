@@ -1,5 +1,4 @@
 import API_URL, { handleResponse } from "./api";
-import logger from "../utils/logger"; 
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
@@ -48,7 +47,6 @@ export const getFourContactsFavorite = async (idUser: string) => {
   return handleResponse(response);
 };
 
-// ✅ AJUSTADO: Devolver el contacto creado
 export const createContact = async (idUser: string, contactData: any) => {
   const isFormData = contactData instanceof FormData;
   
@@ -60,7 +58,7 @@ export const createContact = async (idUser: string, contactData: any) => {
       headers: getAuthHeaders(),
       body: contactData,
     });
-    return handleResponse(response); // ✅ El backend debe devolver el contacto
+    return handleResponse(response);
   } else {
     const payload = {
       id_user: idUser,
@@ -76,11 +74,10 @@ export const createContact = async (idUser: string, contactData: any) => {
       headers: getHeaders(),
       body: JSON.stringify(payload),
     });
-    return handleResponse(response); // ✅ El backend debe devolver el contacto
+    return handleResponse(response);
   }
 };
 
-// ✅ AJUSTADO: Devolver el contacto actualizado
 export const updateContact = async (idUser: string, contactId: string, contactData: any) => {
   const isFormData = contactData instanceof FormData;
   
@@ -90,7 +87,7 @@ export const updateContact = async (idUser: string, contactId: string, contactDa
       headers: getAuthHeaders(),
       body: contactData,
     });
-    return handleResponse(response); // ✅ El backend debe devolver el contacto
+    return handleResponse(response);
   } else {
     const response = await fetch(`${API_URL}/${idUser}/contacts/${contactId}`, {
       method: 'PUT',
@@ -103,7 +100,7 @@ export const updateContact = async (idUser: string, contactId: string, contactDa
         is_favorite: contactData.isfavorite,
       }),
     });
-    return handleResponse(response); // ✅ El backend debe devolver el contacto
+    return handleResponse(response);
   }
 };
 

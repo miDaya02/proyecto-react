@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "@/hooks/useForm";
+import { isValidEmail } from "@/services/authService";
 
 export default function Login() {
   const { login, loading } = useAuth();
@@ -11,9 +13,40 @@ export default function Login() {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+
+  const validateForm = (): boolean => {
+    const newErrors = {
+      email: "",
+      password: "",
+    };
+
+    if (!values.email) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(values.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!values.password) {
+      newErrors.password = "Password is required";
+    } else if (values.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return !newErrors.email && !newErrors.password;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     await login(values.email, values.password);
   };
 
@@ -31,27 +64,37 @@ export default function Login() {
         />
 
         <form className="login-form" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            id="email"
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            required
-            disabled={loading}
-          />
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Email"
+              id="email"
+              name="email"
+              value={values.email}
+              onChange={handleChange}
+              disabled={loading}
+              aria-invalid={!!errors.email}
+            />
+            {errors.email && (
+              <span className="field-error">{errors.email}</span>
+            )}
+          </div>
           
-          <input
-            type="password"
-            placeholder="Password"
-            id="password"
-            name="password"
-            value={values.password}
-            onChange={handleChange}
-            required
-            disabled={loading}
-          />
+          <div className="form-group">
+            <input
+              type="password"
+              placeholder="Password"
+              id="password"
+              name="password"
+              value={values.password}
+              onChange={handleChange}
+              disabled={loading}
+              aria-invalid={!!errors.password}
+            />
+            {errors.password && (
+              <span className="field-error">{errors.password}</span>
+            )}
+          </div>
           
           <button type="submit" className="login-button" disabled={loading}>
             {loading ? "Loading..." : "Login"}

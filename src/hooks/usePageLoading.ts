@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
  * @param excludeRoutes - Rutas donde NO mostrar loading
  */
 export const usePageLoading = (
-  duration: number = 2000,
+  duration: number = 1000,
   excludeRoutes: string[] = ['/login', '/register']
 ) => {
   const [isLoading, setIsLoading] = useState(true);

@@ -1,38 +1,46 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "@/redux/hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useContacts } from "@/hooks/useContacts";
 import ContactCard from "@/components/ContactCard";
 import NewContactModal from "./contacts/newContact";
-import { useState } from "react";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Overview() {
   const id = useAppSelector((state) => state.auth.id);
   const { logout } = useAuth();
   
-  // ✅ Todo viene de Redux
   const {
     contacts,
     favorites,
-    loading,
     fetchNonFavorites,
     fetchTopFavorites,
     toggleFavorite,
   } = useContacts(id);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // ✅ Cargar datos iniciales
   useEffect(() => {
     let cancelled = false;
 
     const loadData = async () => {
       if (cancelled) return;
+      
       await fetchTopFavorites();
       if (cancelled) return;
-      fetchNonFavorites();
+      
+      await fetchNonFavorites();
+      if (cancelled) return;
+      
+      // Esperar mínimo 1 segundo para el loading screen
+      setTimeout(() => {
+        if (!cancelled) {
+          setIsInitialLoading(false);
+        }
+      }, 500);
     };
 
     loadData();
@@ -42,7 +50,6 @@ export default function Overview() {
     };
   }, [fetchNonFavorites, fetchTopFavorites]);
 
-  // ✅ Escuchar evento de contacto creado desde navbar
   useEffect(() => {
     const handleContactCreated = async () => {
       await fetchTopFavorites();
@@ -53,19 +60,20 @@ export default function Overview() {
     return () => window.removeEventListener('contactCreated', handleContactCreated);
   }, [fetchTopFavorites, fetchNonFavorites]);
 
-  // ✅ Simplificado
   const handleRemoveFavorite = async (contactId: string) => {
     await toggleFavorite(contactId, true);
-    // Redux actualiza automáticamente
-    await fetchTopFavorites(); // Recargar top 4
-    fetchNonFavorites(); // Recargar lista
+    await Promise.all([
+      fetchTopFavorites(),
+      fetchNonFavorites()
+    ]);
   };
 
   const handleAddFavorite = async (contactId: string) => {
     await toggleFavorite(contactId, false);
-    // Redux actualiza automáticamente
-    await fetchTopFavorites(); // Recargar top 4
-    fetchNonFavorites(); // Recargar lista
+    await Promise.all([
+      fetchTopFavorites(),
+      fetchNonFavorites()
+    ]);
   };
 
   const handleContactCreated = async () => {
@@ -73,10 +81,9 @@ export default function Overview() {
     fetchNonFavorites(1);
   };
 
-  if (loading && favorites.length === 0 && contacts.length === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>Loading...</div>
-    );
+  // Mostrar loading screen en carga inicial
+  if (isInitialLoading) {
+    return <LoadingScreen duration={500} />;
   }
 
   return (

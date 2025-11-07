@@ -1,7 +1,3 @@
-/**
- * Logger utility - Solo muestra logs en desarrollo
- */
-
 const isDev = process.env.NODE_ENV === 'development';
 
 export const logger = {

@@ -8,7 +8,7 @@ type LoadingScreenProps = {
 };
 
 export default function LoadingScreen({ 
-  duration = 2000, 
+  duration = 1000, 
   onComplete 
 }: LoadingScreenProps) {
   const [isVisible, setIsVisible] = useState(true);

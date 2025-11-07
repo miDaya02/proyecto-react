@@ -28,7 +28,6 @@ export const useContacts = (userId: string | null) => {
   const dispatch = useAppDispatch();
   const { showToast } = useToast();
 
-  // ✅ Obtener datos desde Redux
   const contacts = useAppSelector((state) => state.contacts.contacts);
   const favorites = useAppSelector((state) => state.contacts.favorites);
   const pagination = useAppSelector((state) => state.contacts.pagination);
@@ -111,10 +110,16 @@ export const useContacts = (userId: string | null) => {
       try {
         const newContact = await createContact(userId, contactData);
         
-        // ✅ Actualización optimista
+        // Actualización optimista
         dispatch(addContactOptimistic(newContact));
         
         showToast("Contact created successfully", "success");
+        
+        // Disparar evento para que los componentes se actualicen
+        window.dispatchEvent(new CustomEvent('contactCreated', { 
+          detail: { refresh: true } 
+        }));
+        
         return { success: true };
       } catch (error: any) {
         showToast(error.message || "Error creating contact", "error");
@@ -131,45 +136,59 @@ export const useContacts = (userId: string | null) => {
       try {
         const updatedContact = await updateContact(userId, contactId, contactData);
         
-        // ✅ Actualización optimista
+        // Solo actualización optimista, sin recargar
         dispatch(updateContactOptimistic(updatedContact));
         
         showToast("Contact updated successfully", "success");
+        
         return { success: true };
       } catch (error: any) {
+        // Si falla, recargar para mostrar el estado real
+        await fetchContacts(pagination.currentPage);
         showToast(error.message || "Error updating contact", "error");
-        return { success: false, error: error.message };
-      }
-    },
-    [userId, dispatch, showToast]
-  );
-
-  const removeContact = useCallback(
-    async (contactId: string) => {
-      if (!userId) return { success: false };
-
-      // ✅ Actualización optimista
-      dispatch(deleteContactOptimistic(contactId));
-
-      try {
-        await deleteContact(userId, contactId);
-        showToast("Contact deleted successfully", "success");
-        return { success: true };
-      } catch (error: any) {
-        // Si falla, recargar para revertir
-        fetchContacts(pagination.currentPage);
-        showToast(error.message || "Error deleting contact", "error");
         return { success: false, error: error.message };
       }
     },
     [userId, dispatch, showToast, fetchContacts, pagination.currentPage]
   );
 
+  const removeContact = useCallback(
+    async (contactId: string) => {
+      if (!userId) return { success: false };
+
+      // Actualización optimista
+      dispatch(deleteContactOptimistic(contactId));
+
+      try {
+        await deleteContact(userId, contactId);
+        showToast("Contact deleted successfully", "success");
+        
+        // Solo recargar si eliminamos el último contacto de la página
+        // y no estamos en la primera página
+        if (contacts.length === 1 && pagination.currentPage > 1) {
+          await fetchContacts(pagination.currentPage - 1);
+        } else if (contacts.length === 1) {
+          // Si es el último contacto de la primera página, recargar
+          await fetchContacts(1);
+        }
+        // Si hay más contactos en la página, la actualización optimista es suficiente
+        
+        return { success: true };
+      } catch (error: any) {
+        // Si falla, recargar para revertir
+        await fetchContacts(pagination.currentPage);
+        showToast(error.message || "Error deleting contact", "error");
+        return { success: false, error: error.message };
+      }
+    },
+    [userId, dispatch, showToast, fetchContacts, pagination.currentPage, contacts.length]
+  );
+
   const toggleFavorite = useCallback(
     async (contactId: string, isFavorite: boolean) => {
       if (!userId) return { success: false };
 
-      // ✅ Actualización optimista
+      // Actualización optimista
       dispatch(toggleFavoriteOptimistic({ contactId, isFavorite: !isFavorite }));
 
       try {
@@ -183,13 +202,14 @@ export const useContacts = (userId: string | null) => {
 
         return { success: true };
       } catch (error: any) {
-        // Si falla, revertir
+        // Si falla, revertir y recargar
         dispatch(toggleFavoriteOptimistic({ contactId, isFavorite }));
+        await fetchContacts(pagination.currentPage);
         showToast(error.message || "Error updating favorite", "error");
         return { success: false, error: error.message };
       }
     },
-    [userId, dispatch, showToast]
+    [userId, dispatch, showToast, fetchContacts, pagination.currentPage]
   );
 
   return {

@@ -7,12 +7,12 @@ import ContactCard from "@/components/ContactCard";
 import EditContactModal from "./editContact";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Paginator from "../paginator/page";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Contact } from "@/types";
 
 export default function Contacts() {
   const id = useAppSelector((state) => state.auth.id);
   
-  // ✅ Datos vienen directamente de Redux (sin localContacts)
   const {
     contacts,
     pagination,
@@ -24,6 +24,7 @@ export default function Contacts() {
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     contactId: string | null;
@@ -34,18 +35,40 @@ export default function Contacts() {
     contactName: "",
   });
 
+  // ✅ Cargar contactos al montar
   useEffect(() => {
-    fetchContacts();
-  }, [fetchContacts]);
+    let cancelled = false;
 
-  // ✅ Escuchar evento de contacto creado desde navbar
-  useEffect(() => {
-    const handleContactCreated = () => {
-      fetchContacts(1);
+    const loadData = async () => {
+      if (cancelled) return;
+      
+      await fetchContacts(1);
+      
+      // Esperar mínimo 1 segundo para el loading screen
+      setTimeout(() => {
+        if (!cancelled) {
+          setIsInitialLoading(false);
+        }
+      }, 500);
     };
 
-    window.addEventListener('contactCreated', handleContactCreated);
-    return () => window.removeEventListener('contactCreated', handleContactCreated);
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchContacts]);
+
+  // ✅ Escuchar cuando se crea un contacto desde navbar
+  useEffect(() => {
+    const handleContactCreated = (e: CustomEvent) => {
+      if (e.detail?.refresh) {
+        fetchContacts(1);
+      }
+    };
+
+    window.addEventListener('contactCreated', handleContactCreated as EventListener);
+    return () => window.removeEventListener('contactCreated', handleContactCreated as EventListener);
   }, [fetchContacts]);
 
   const handlePageChange = (newPage: number) => {
@@ -53,9 +76,9 @@ export default function Contacts() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ✅ Simplificado: Redux maneja la actualización optimista
   const handleToggleFavorite = async (contactId: string, isFavorite: boolean) => {
     await toggleFavorite(contactId, isFavorite);
+    // toggleFavorite ya recarga automáticamente
   };
 
   const handleDeleteClick = (contact: Contact) => {
@@ -66,7 +89,6 @@ export default function Contacts() {
     });
   };
 
-  // ✅ Simplificado: Redux maneja la actualización optimista
   const handleConfirmDelete = async () => {
     if (!confirmDialog.contactId) return;
     
@@ -74,6 +96,7 @@ export default function Contacts() {
     setConfirmDialog({ isOpen: false, contactId: null, contactName: "" });
     
     await removeContact(contactToDelete);
+    // removeContact ya recarga automáticamente
   };
 
   const handleEditContact = (contact: Contact) => {
@@ -83,6 +106,7 @@ export default function Contacts() {
   };
 
   const handleContactUpdated = () => {
+    // editContact en el modal ya recarga automáticamente
     fetchContacts(pagination.currentPage);
   };
 
@@ -90,6 +114,11 @@ export default function Contacts() {
     setIsEditModalOpen(false);
     setSelectedContact(null);
   };
+
+  // Mostrar loading screen en carga inicial
+  if (isInitialLoading) {
+    return <LoadingScreen duration={500} />;
+  }
 
   return (
     <>
@@ -118,9 +147,7 @@ export default function Contacts() {
       <section className="card contacts-page">
         <h2>Contact List</h2>
         <div className="cards-container">
-          {loading && contacts.length === 0 ? (
-            <p>Loading...</p>
-          ) : contacts.length === 0 ? (
+          {contacts.length === 0 ? (
             <p>No contacts available</p>
           ) : (
             contacts.map((contact) => (

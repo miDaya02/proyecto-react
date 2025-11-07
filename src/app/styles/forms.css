@@ -1,0 +1,355 @@
+/* ===================================
+   MODAL FORMS
+   =================================== */
+.inline-form-container.open {
+  justify-content: center;
+  display: flex;
+  max-height: 550px;
+  width: 100%;
+  opacity: 1;
+}
+
+.inline-form-content {
+  background-color: #C1D72F;
+  padding: 2rem 3rem;
+  border-radius: 0;
+  max-height: 480px;
+  width: 35%;
+  min-width: 320px;
+  margin: 0;
+  box-shadow: none;
+  position: relative;
+  overflow-y: auto;
+}
+
+.form-header {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-title {
+  display: none;
+}
+
+.form-close {
+  background: none;
+  border: none;
+  color: #323232;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.form-close:hover {
+  transform: scale(1.1);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-input {
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+  font-size: 0.9rem;
+  background-color: #d9e381;
+  color: #000;
+  transition: all 0.2s;
+  box-shadow: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  outline: none;
+  width: 100%;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.form-input:focus {
+  outline: none;
+  background-color: #d9e381;
+  box-shadow: none;
+  border-bottom: 2px solid #a8b844;
+}
+
+.form-input[aria-invalid="true"] {
+  border-bottom-color: #ef4444;
+}
+
+.form-input:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkbox-group {
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: #323232;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #a8b844;
+  border-radius: 0.25rem;
+}
+
+.submit-button {
+  background: white;
+  color: #323232;
+  border: 2px solid #e5e7eb;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  margin-top: 1rem;
+  align-self: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #d1d5db;
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===================================
+   FILE UPLOAD
+   =================================== */
+.file-label {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  background-color: white;
+  color: #323232;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+  margin-bottom: 0.3rem;
+}
+
+.file-label:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.file-input {
+  display: none;
+}
+
+.preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+  padding: 0.4rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 0.375rem;
+}
+
+.preview-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clear-button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.clear-button:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.clear-button:active {
+  transform: translateY(0);
+}
+
+/* ===================================
+   RESPONSIVE - FORMS
+   =================================== */
+@media (max-width: 1024px) {
+  .inline-form-content {
+    width: 45%;
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .inline-form-container.open { 
+    max-height: 500px; 
+  }
+  
+  .inline-form-content { 
+    width: 60%; 
+    padding: 1.5rem 2rem; 
+    max-height: 450px; 
+  }
+  
+  .contact-form { 
+    gap: 0.85rem; 
+    padding-top: 1.5rem; 
+  }
+  
+  .form-input { 
+    padding: 0.65rem 0.85rem; 
+    font-size: 0.85rem; 
+  }
+  
+  .submit-button { 
+    padding: 0.5rem 1.25rem; 
+    font-size: 0.75rem; 
+  }
+}
+
+@media (max-width: 640px) {
+  .inline-form-container.open { 
+    max-height: 480px; 
+  }
+  
+  .inline-form-content { 
+    width: 75%; 
+    padding: 1.5rem; 
+    max-height: 430px; 
+  }
+  
+  .contact-form { 
+    gap: 0.75rem; 
+    padding-top: 1.5rem; 
+  }
+  
+  .form-input { 
+    padding: 0.65rem 0.75rem; 
+    font-size: 0.85rem; 
+  }
+  
+  .checkbox-label { 
+    font-size: 0.85rem; 
+  }
+  
+  .checkbox-input { 
+    width: 16px; 
+    height: 16px; 
+  }
+  
+  .submit-button { 
+    padding: 0.6rem 1.25rem; 
+    font-size: 0.7rem; 
+  }
+  
+  .form-close { 
+    font-size: 20px; 
+  }
+
+  .file-label {
+    padding: 0.55rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .preview-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .clear-button {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .inline-form-container.open { 
+    max-height: 460px; 
+  }
+  
+  .inline-form-content { 
+    width: 90%; 
+    padding: 1.25rem 1rem; 
+    max-height: 410px; 
+    min-width: 280px; 
+  }
+  
+  .contact-form { 
+    gap: 0.65rem; 
+    padding-top: 1.25rem; 
+  }
+  
+  .form-input { 
+    padding: 0.6rem 0.7rem; 
+    font-size: 0.8rem; 
+  }
+  
+  .checkbox-label { 
+    font-size: 0.8rem; 
+  }
+  
+  .submit-button { 
+    padding: 0.55rem 1rem; 
+    font-size: 0.65rem; 
+    margin-top: 0.75rem; 
+  }
+  
+  .form-close { 
+    font-size: 18px; 
+  }
+}

@@ -4,7 +4,7 @@ const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 export default NEXT_PUBLIC_API_URL;
 
 export const handleResponse = async (response: Response) => {
-  // Si token expiró o es inválido
+  // If unauthorized, clear storage and redirect to login
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');

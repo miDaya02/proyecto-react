@@ -17,12 +17,19 @@ export const useAuth = () => {
     try {
       const response = await userLogin(email, password);
       
+      // ✅ Guardar en localStorage primero
       localStorage.setItem("id", response.id);
       localStorage.setItem("token", response.token);
+      
+      // ✅ Luego actualizar Redux
       dispatch(setCredentials({ id: response.id, token: response.token }));
       
       showToast("Login successful", "success");
-      router.push("/contacts");
+      
+      // ✅ Pequeño delay para asegurar que Redux se actualice
+      setTimeout(() => {
+        router.push("/contacts");
+      }, 100);
       
       return { success: true };
     } catch (err: any) {
@@ -44,12 +51,15 @@ export const useAuth = () => {
     try {
       const response = await userRegister(firstName, lastName, email, password);
 
-      localStorage.setItem("id", response.id);
-      localStorage.setItem("token", response.token);
-      dispatch(setCredentials({ id: response.id, token: response.token }));
-
-      showToast("Registration successful", "success");
-      router.push("/contacts");
+      // ✅ CORREGIDO: Después de registrar, NO iniciar sesión automáticamente
+      // Solo mostrar mensaje de éxito y redirigir a login
+      
+      showToast("Registration successful! Please login.", "success");
+      
+      // ✅ Redirigir a login después de un breve delay
+      setTimeout(() => {
+        router.push("/login");
+      }, 1000);
       
       return { success: true };
     } catch (err: any) {

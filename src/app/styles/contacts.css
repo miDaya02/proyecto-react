@@ -1,0 +1,218 @@
+/* ===================================
+   CONTACTS SECTION
+   =================================== */
+.card {
+  margin: 1.5rem 1.25rem 5rem;
+}
+
+.card h2 {
+  font-size: 1.75rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.card h2::after {
+  content: "";
+  flex-grow: 1;
+  height: 2px;
+  background-color: #C1D72F;
+}
+
+.cards-container {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2.7rem;
+  margin-top: 1.5rem;
+}
+
+/* ===================================
+   CONTACT CARD
+   =================================== */
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  max-width: 420px;
+  align-items: center;
+  border-radius: 0.2rem;
+  width: 260px;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  background: white;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-icon-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+
+.edit-icon-button:hover {
+  transform: scale(1.15);
+}
+
+.icon-edit {
+  width: 20px;
+  height: 20px;
+  filter: invert(52%) sepia(8%) saturate(489%) hue-rotate(182deg) brightness(92%) contrast(87%);
+}
+
+.edit-icon-button:hover .icon-edit {
+  filter: invert(17%) sepia(5%) saturate(435%) hue-rotate(314deg) brightness(95%) contrast(90%);
+}
+
+.avatar,
+.avatarc {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  border: 3px solid #C1D72F;
+}
+
+.info {
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  padding: 0 0.5rem;
+}
+
+.info h3,
+.info p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info h3 {
+  font-size: 1.09rem;
+  margin-bottom: 0.5rem;
+}
+
+.info p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* ===================================
+   CARD ACTIONS
+   =================================== */
+.actions {
+  display: flex;
+  gap: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.favorite,
+.remove,
+.trash {
+  background-color: white;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.favorite {
+  border: 1.32px solid #C1D72F;
+  border-radius: 0.35rem;
+  padding: 0.25rem;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.remove,
+.trash {
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.remove {
+  padding: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.favorite:hover {
+  background-color: #f9fafb;
+  transform: scale(1.05);
+}
+
+.remove:hover,
+.trash:hover {
+  transform: scale(1.05);
+}
+
+.contacts-page .remove {
+  font-size: 0;
+  line-height: 0;
+}
+
+.contacts-page .remove .iconx {
+  font-size: initial;
+  display: block;
+}
+
+.contacts-page .remove::before,
+.contacts-page .remove::after {
+  content: none !important;
+  display: none !important;
+}
+
+.remove::after {
+  content: " Remove";
+}
+
+/* ===================================
+   ICONS
+   =================================== */
+.iconFavorite {
+  width: 20px;
+  height: 20px;
+  filter: invert(79%) sepia(72%) saturate(375%) hue-rotate(28deg) brightness(132%) contrast(90%);
+}
+
+.iconx,
+.iconTrash {
+  filter: invert(28%) sepia(100%) saturate(2000%) hue-rotate(340deg) brightness(95%) contrast(90%);
+}
+
+.iconx {
+  width: 15px;
+  height: 15px;
+}
+
+.iconTrash {
+  width: 28px;
+  height: 28px;
+}
+
+.iconMas {
+  width: 18px;
+  height: 19px;
+  margin-right: 0.5rem;
+}
